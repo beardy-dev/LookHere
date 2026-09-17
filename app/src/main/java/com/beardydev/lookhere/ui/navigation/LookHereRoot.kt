@@ -73,8 +73,17 @@ fun LookHereRoot() {
                         viewModel = viewModel,
                         canCancel = canCancel,
                         onGifPicked = { picked ->
-                            scope.launch { container.selectGif(picked) }
-                            screen = Screen.Camera
+                            // Await the save before navigating: CameraScreen mounts a
+                            // brand-new selectedGif subscription on every entry, and if
+                            // navigation doesn't wait for the DataStore write to commit
+                            // first, that fresh subscription can race it and land on the
+                            // previous value -- observed live via logcat as exactly this:
+                            // the write completes, but CameraScreen's freshly-started
+                            // collector still settles on the prior GIF.
+                            scope.launch {
+                                container.selectGif(picked)
+                                screen = Screen.Camera
+                            }
                         },
                         onCancel = { screen = Screen.Camera },
                     )

@@ -396,17 +396,10 @@ private fun SelfieGifPane(gif: SelectedGif?, modifier: Modifier = Modifier) {
                     // tells Glide about it: Glide's request is tied to the Activity-level
                     // RequestManager, not this View's own lifecycle, so without an explicit
                     // clear() the discarded view's request/target is leaked and keeps
-                    // decoding frames in the background.
-                    //
-                    // TODO: this onRelease fix was expected to resolve the "previous GIF
-                    // still showing after switching to selfie mode" bug, but it's been seen
-                    // recurring after further testing. New clue: backgrounding and
-                    // reopening the app (not a full process kill) also fixes the display,
-                    // which points away from this being a process-level leak and toward
-                    // something Activity-lifecycle-scoped instead (Glide's RequestManager
-                    // auto-pause/resume, or collectAsStateWithLifecycle's
-                    // repeatOnLifecycle restart) -- see the selfie_mode_stale_gif_bug
-                    // memory note for details. Revisit once current UI/UX work is done.
+                    // decoding frames in the background. (Not the cause of the "previous GIF
+                    // still showing" bug that was here -- that turned out to be a real race in
+                    // LookHereRoot.onGifPicked navigating before the DataStore save committed,
+                    // now fixed there. This clear() is still worth keeping to avoid the leak.)
                     onRelease = { imageView -> Glide.with(imageView).clear(imageView) },
                 )
             }
