@@ -80,6 +80,16 @@ app/src/main/java/com/beardydev/lookhere/
 4. Build and run. The GIF search screen will show a "missing API key" error
    until step 3 is done.
 
+## CI builds
+
+Gradle reads `KLIPY_API_KEY` and the signing credentials (`storeFile`/
+`storePassword`/`keyAlias`/`keyPassword`) from `local.properties` /
+`keystore.properties` first; if those files don't exist (as in CI), it falls
+back to environment variables of the same names instead (`KLIPY_API_KEY`,
+`KEYSTORE_PATH`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`). The
+release workflow (`.github/workflows/release.yml`) supplies these from
+repository secrets.
+
 ## Release signing
 
 Release builds are signed with a keystore at `keystore/lookhere-release.jks`,

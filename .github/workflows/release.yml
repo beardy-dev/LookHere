@@ -41,6 +41,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KLIPY_API_KEY: ${{ secrets.KLIPY_API_KEY }}
         run: ./gradlew assembleRelease
 
       - name: Create GitHub Release

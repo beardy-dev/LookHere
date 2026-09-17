@@ -29,6 +29,10 @@ val releaseStorePassword: String? = keystoreProperties.getProperty("storePasswor
 val releaseKeyAlias: String? = keystoreProperties.getProperty("keyAlias") ?: System.getenv("KEY_ALIAS")
 val releaseKeyPassword: String? = keystoreProperties.getProperty("keyPassword") ?: System.getenv("KEY_PASSWORD")
 
+// Same pattern as the signing config above: local dev sets this in
+// local.properties, CI supplies it as an environment variable instead.
+val klipyApiKey: String = localProperties.getProperty("KLIPY_API_KEY") ?: System.getenv("KLIPY_API_KEY") ?: ""
+
 android {
     namespace = "com.beardydev.lookhere"
     compileSdk {
@@ -47,11 +51,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField(
-            "String",
-            "KLIPY_API_KEY",
-            "\"${localProperties.getProperty("KLIPY_API_KEY", "")}\"",
-        )
+        buildConfigField("String", "KLIPY_API_KEY", "\"$klipyApiKey\"")
     }
 
     signingConfigs {
