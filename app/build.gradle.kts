@@ -20,6 +20,15 @@ val keystoreProperties = Properties().apply {
     }
 }
 
+// Local dev uses keystore.properties (gitignored); CI has no such file and
+// supplies the same values as environment variables instead (see
+// .github/workflows/release.yml). rootProject.file(...) resolves both a
+// relative path (local) and an absolute one (CI) correctly.
+val releaseStoreFile: String? = keystoreProperties.getProperty("storeFile") ?: System.getenv("KEYSTORE_PATH")
+val releaseStorePassword: String? = keystoreProperties.getProperty("storePassword") ?: System.getenv("KEYSTORE_PASSWORD")
+val releaseKeyAlias: String? = keystoreProperties.getProperty("keyAlias") ?: System.getenv("KEY_ALIAS")
+val releaseKeyPassword: String? = keystoreProperties.getProperty("keyPassword") ?: System.getenv("KEY_PASSWORD")
+
 android {
     namespace = "com.beardydev.lookhere"
     compileSdk {
@@ -47,12 +56,11 @@ android {
 
     signingConfigs {
         create("release") {
-            val storeFilePath = keystoreProperties.getProperty("storeFile")
-            if (storeFilePath != null) {
-                storeFile = rootProject.file(storeFilePath)
-                storePassword = keystoreProperties.getProperty("storePassword")
-                keyAlias = keystoreProperties.getProperty("keyAlias")
-                keyPassword = keystoreProperties.getProperty("keyPassword")
+            if (releaseStoreFile != null) {
+                storeFile = rootProject.file(releaseStoreFile)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
             }
         }
     }
@@ -62,7 +70,7 @@ android {
             optimization {
                 enable = false
             }
-            if (keystoreProperties.getProperty("storeFile") != null) {
+            if (releaseStoreFile != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }
