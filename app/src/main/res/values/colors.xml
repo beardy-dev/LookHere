@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#FFF8F1</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="primary">#FD594D</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="secondary">#FBB748</color>
+    <color name="on_secondary">#402800</color>
+    <color name="tertiary">#2F8F87</color>
+    <color name="on_tertiary">#FFFFFF</color>
+    <color name="accent">#FB9F3A</color>
+    <color name="text_primary">#241512</color>
+    <color name="text_secondary">#7A655D</color>
+    <color name="error">#B23A48</color>
+
+    <!-- Kept constant across light/dark (not overridden in values-night) so the
+         splash screen stays on-brand regardless of system theme. -->
+    <color name="splash_background">#FD594D</color>
+</resources>

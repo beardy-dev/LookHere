@@ -1,0 +1,24 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Signing credentials -- never commit these. Broad patterns on purpose so any
+# keystore added anywhere in the repo (not just today's file/location) stays
+# excluded.
+*.jks
+*.keystore
+*.p12
+*.pepk
+keystore.properties

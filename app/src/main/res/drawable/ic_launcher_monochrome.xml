@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simple circle silhouette approximating the sun icon's shape, used when a
+     themed/monochrome icon pack (e.g. Samsung Good Lock) is active. Without
+     this, those packs fall back to a blank shape since our real artwork has
+     no transparency to derive a silhouette from. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M54,54 m-34,0 a34,34 0 1,0 68,0 a34,34 0 1,0 -68,0" />
+</vector>
