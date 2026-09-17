@@ -18,8 +18,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v4
+      - name: Accept Android SDK licenses
+        # ubuntu-latest runners already ship an Android SDK; android-actions/setup-android
+        # fails outright because it unconditionally requests the "tools" package, which
+        # Google removed from the SDK repository years ago. Gradle/AGP auto-download the
+        # specific platform/build-tools versions this project needs during the build --
+        # they just need the licenses pre-accepted first.
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
