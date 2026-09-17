@@ -6,33 +6,41 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.lifecycleScope
 import com.beardydev.lookhere.ui.navigation.LookHereRoot
+import com.beardydev.lookhere.ui.splash.AppSplashScreen
 import com.beardydev.lookhere.ui.theme.LookHereTheme
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    private var keepSplashOnScreen = true
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        val splashScreen = installSplashScreen()
+        // Dismisses as soon as this first Compose frame is drawn -- the Compose
+        // AppSplashScreen below (same icon, same brand-red background) then takes
+        // over for the full delay, since the system SplashScreen API has no slot
+        // for the "Powered by Klipy" attribution text.
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-        splashScreen.setKeepOnScreenCondition { keepSplashOnScreen }
-        // A tad longer than the default (which dismisses as soon as the first
-        // frame is drawn -- often barely visible for a screen this simple).
-        lifecycleScope.launch {
-            delay(500)
-            keepSplashOnScreen = false
-        }
 
         enableEdgeToEdge()
         setContent {
             LookHereTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    LookHereRoot()
+                    var showSplash by remember { mutableStateOf(true) }
+                    LaunchedEffect(Unit) {
+                        delay(1000)
+                        showSplash = false
+                    }
+                    if (showSplash) {
+                        AppSplashScreen()
+                    } else {
+                        LookHereRoot()
+                    }
                 }
             }
         }
