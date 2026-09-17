@@ -1,3 +1,4 @@
+![App Logo](/Users/andrew/workspace/kid-snap/lookhere_icon_fullbleed_v3.png)
 # LookHere
 
 An Android camera app built for the Samsung Galaxy Z Fold: while you shoot a
