@@ -42,8 +42,8 @@ android {
         // versionCode derived from semver (major * 10_000 + minor * 100 + patch) so
         // it stays in step with versionName and keeps increasing across releases,
         // which Android requires for every update.
-        versionCode = 100
-        versionName = "0.1.0"
+        versionCode = 101
+        versionName = "0.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -83,6 +83,12 @@ android {
         compose = true
         buildConfig = true
     }
+}
+
+// Output APK base name: without this it's "app-<buildType>.apk", taken from
+// the Gradle module directory name (app/), not the app's actual name.
+base {
+    archivesName.set("lookhere")
 }
 
 dependencies {
