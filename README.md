@@ -5,7 +5,7 @@ An Android camera app built for the Samsung Galaxy Z Fold: while you shoot a
 photo with the rear camera, the phone's **cover screen** (facing the subject)
 loops a fun GIF to grab their attention, while the **inner screen** stays the
 normal camera viewfinder for whoever's taking the photo. On phones without a
-second screen — or when the Fold is folded shut — it falls back to a selfie
+second screen (or when the Fold is folded shut), it falls back to a selfie
 mode that shows the GIF and viewfinder side by side on the one screen you've
 got.
 
@@ -20,10 +20,10 @@ APK from outside it:
 
 1. Download the `.apk` file from the [latest release](https://github.com/beardy-dev/LookHere/releases/latest)
 2. When you open it, Android will likely block the install and prompt you
-   to allow it — tap through to **Settings** and enable "Install unknown
+   to allow it: tap through to **Settings** and enable "Install unknown
    apps" for whichever app you downloaded it with (Chrome, Files, etc.)
 3. You may also see a Play Protect warning like *"Unknown app"* or *"App
-   not verified"* — this is expected for any app distributed outside the
+   not verified"*. This is expected for any app distributed outside the
    Play Store from a developer with no install history yet, not a sign
    something is wrong. You can review the source code in this repo
    yourself if you'd like to verify what it does before installing.
@@ -33,22 +33,25 @@ APK from outside it:
 
 LookHere requests:
 
-- **Camera** — to show the viewfinder and take photos, obviously.
-- **Photos/Media** — to save your photos to the camera roll, and to let
+- **Camera**: to show the viewfinder and take photos, obviously.
+- **Photos/Media**: to save your photos to the camera roll, and to let
   you upload your own GIF from your device instead of searching.
-- **Internet** — to search GIFs via the [Klipy](https://klipy.com) API.
+- **Internet**: to search GIFs via the [Klipy](https://klipy.com) API.
 
-That's it — no location, no contacts, no background access.
+That's it: no location, no contacts, no background access.
 
 ## Features
 
 - **GIF search** via the [Klipy](https://klipy.com) API (a Tenor-API
-  successor), filtered to G-rated content, plus a **trending** feed shown by
-  default so there's always something to browse.
+  successor), filtered to G-rated content.
+- **Recent / Uploads / Trending tabs**: a blank search shows a tabbed
+  browse area: your last 12 picks, just the ones you uploaded from your
+  device, and Klipy's trending feed. Typing a search query replaces the
+  tabs with search results; clearing it brings them back. Recent and
+  Uploads work without a Klipy API key since they're local data; only
+  search and Trending need the network.
 - **Upload your own GIF** from the device's photo library as an alternative
-  to searching.
-- **Recents** — the last GIFs you've picked (search or upload) show up first
-  the next time you open the picker, before falling back to trending.
+  to searching; the last several uploads stay available in the Uploads tab.
 - **Rear-camera + cover-screen mode**: the selected GIF loops on the Fold's
   outer display via Jetpack WindowManager's rear-display "window area" API,
   while the inner screen shows a live CameraX viewfinder.
@@ -79,26 +82,37 @@ SDK 37.
 
 ## Project structure
 
+Package-based Clean Architecture in a single module: `domain` holds models,
+repository interfaces, and the use cases that actually contain
+orchestration/branching logic; `data` implements those interfaces; `ui`
+depends only on `domain`, never on `data` directly. Wiring is manual (no
+Hilt/Dagger) via `di/AppContainer`.
+
 ```
 app/src/main/java/com/beardydev/lookhere/
 ├── LookHereApp.kt              Application class, owns the manual DI container
 ├── MainActivity.kt             Single Activity, hosts the Compose tree + splash screen
 ├── di/                         Manual dependency container (no Hilt/Dagger)
+├── domain/
+│   ├── model/                  GifResult, SelectedGif, GifBrowseResult, TrendingState
+│   ├── repository/              GifRepository / SelectedGifRepository interfaces
+│   ├── error/                   AppError sealed type
+│   └── usecase/                 ObserveGifBrowseResultsUseCase, ObserveCoverScreenGifUseCase, SelectGifUseCase
 ├── data/
-│   ├── klipy/                  Retrofit API, DTOs, and repository for Klipy GIF search
-│   └── settings/                Selected-GIF + recents persistence (DataStore)
+│   ├── klipy/                  Retrofit API, DTOs, and GifRepositoryImpl for Klipy GIF search
+│   └── settings/                SelectedGifRepositoryImpl: selected-GIF + recents persistence (DataStore)
 ├── display/                     Rear-display "window area" controller for the cover screen
 └── ui/
     ├── theme/                   Color palette + MaterialTheme setup
     ├── navigation/               Top-level screen routing (GIF picker <-> camera)
-    ├── gifsearch/                GIF search/recents/upload screen
+    ├── gifsearch/                GIF search/tabbed-browse/upload screen
     └── camera/                   Camera screen (viewfinder, capture, selfie split layout)
 ```
 
 ## Setup
 
 1. Open the project in Android Studio (or build from the CLI with the
-   included Gradle wrapper — no separate Android SDK/JDK setup needed if
+   included Gradle wrapper, no separate Android SDK/JDK setup needed if
    you're using Android Studio's bundled versions).
 2. Get a Klipy API key: sign up at
    [partner.klipy.com](https://partner.klipy.com), create a test key (100
@@ -111,6 +125,12 @@ app/src/main/java/com/beardydev/lookhere/
    ```
 4. Build and run. The GIF search screen will show a "missing API key" error
    until step 3 is done.
+
+## Testing
+
+Unit tests cover the domain use cases (`./gradlew testDebugUnitTest`),
+using hand-rolled fakes for the repository interfaces rather than a mocking
+library. No API key or device/emulator needed to run them.
 
 ## CI builds
 
@@ -143,14 +163,14 @@ retains an upload-key recovery path even if you lose your local copy.
 
 - The cover-screen GIF loop requires a real Samsung Galaxy Fold device (or
   similar dual-screen foldable) with vendor support for Jetpack
-  WindowManager's rear-display API — it can't be verified on an emulator.
+  WindowManager's rear-display API. It can't be verified on an emulator.
 - v1 scope is a single manually-picked GIF per session; auto-rotating
   through multiple GIFs per shutter press is a possible future feature, not
   built here.
 
 ## Versioning
 
-Follows [semantic versioning](https://semver.org/); current version `0.1.0`.
+Follows [semantic versioning](https://semver.org/); current version `0.2.1`.
 `versionCode` is derived from the semver string
 (`major * 10_000 + minor * 100 + patch`) so it stays in step with
 `versionName` and keeps increasing across releases.
