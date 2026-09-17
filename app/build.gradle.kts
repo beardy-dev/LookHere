@@ -46,8 +46,8 @@ android {
         // versionCode derived from semver (major * 10_000 + minor * 100 + patch) so
         // it stays in step with versionName and keeps increasing across releases,
         // which Android requires for every update.
-        versionCode = 102
-        versionName = "0.1.2"
+        versionCode = 103
+        versionName = "0.1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
