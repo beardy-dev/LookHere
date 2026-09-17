@@ -4,6 +4,7 @@ import com.beardydev.lookhere.domain.error.AppError
 import com.beardydev.lookhere.domain.model.GifBrowseResult
 import com.beardydev.lookhere.domain.model.GifResult
 import com.beardydev.lookhere.domain.model.SelectedGif
+import com.beardydev.lookhere.domain.model.TrendingState
 import java.io.IOException
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
@@ -28,31 +29,37 @@ class ObserveGifBrowseResultsUseCaseTest {
     )
 
     @Test
-    fun `blank query with existing recents shows recents, skipping loading and trending`() = runTest {
+    fun `blank query browses recents and trending together`() = runTest {
         val selectedGifRepository = FakeSelectedGifRepository(initialRecents = listOf(recent))
         val useCase = ObserveGifBrowseResultsUseCase(
-            gifRepository = FakeGifRepository(),
-            selectedGifRepository = selectedGifRepository,
-            isApiKeyConfigured = true,
-        )
-
-        val results = useCase(flowOf("")).take(1).toList()
-
-        assertEquals(listOf(GifBrowseResult.Recents(listOf(recent))), results)
-    }
-
-    @Test
-    fun `blank query with no recents falls back to trending`() = runTest {
-        val useCase = ObserveGifBrowseResultsUseCase(
             gifRepository = FakeGifRepository(trendingResult = Result.success(listOf(gif))),
-            selectedGifRepository = FakeSelectedGifRepository(initialRecents = emptyList()),
+            selectedGifRepository = selectedGifRepository,
             isApiKeyConfigured = true,
         )
 
         val results = useCase(flowOf("")).take(2).toList()
 
         assertEquals(
-            listOf(GifBrowseResult.Loading, GifBrowseResult.Results(listOf(gif))),
+            listOf(
+                GifBrowseResult.Browsing(recents = listOf(recent), trending = TrendingState.Loading),
+                GifBrowseResult.Browsing(recents = listOf(recent), trending = TrendingState.Loaded(listOf(gif))),
+            ),
+            results,
+        )
+    }
+
+    @Test
+    fun `missing api key still allows browsing recents, only trending errors`() = runTest {
+        val useCase = ObserveGifBrowseResultsUseCase(
+            gifRepository = FakeGifRepository(),
+            selectedGifRepository = FakeSelectedGifRepository(initialRecents = listOf(recent)),
+            isApiKeyConfigured = false,
+        )
+
+        val results = useCase(flowOf("")).take(1).toList()
+
+        assertEquals(
+            listOf(GifBrowseResult.Browsing(recents = listOf(recent), trending = TrendingState.Error(AppError.ApiKeyMissing))),
             results,
         )
     }
@@ -74,7 +81,7 @@ class ObserveGifBrowseResultsUseCaseTest {
     }
 
     @Test
-    fun `missing api key short-circuits with ApiKeyMissing, before any loading state`() = runTest {
+    fun `missing api key short-circuits search with ApiKeyMissing, before any loading state`() = runTest {
         val useCase = ObserveGifBrowseResultsUseCase(
             gifRepository = FakeGifRepository(),
             selectedGifRepository = FakeSelectedGifRepository(),

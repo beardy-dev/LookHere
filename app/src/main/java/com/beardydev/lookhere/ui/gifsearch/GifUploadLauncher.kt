@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import com.beardydev.lookhere.domain.repository.MAX_RECENT_GIFS
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,11 +52,16 @@ private suspend fun copyGifToInternalStorage(context: Context, uri: Uri): String
                 destination.outputStream().use { output -> input.copyTo(output) }
             } ?: return@runCatching null
 
-            // Safe to clean up older uploads now: deleting a file doesn't disturb any
-            // process still reading it via an existing file descriptor/mapping, unlike
-            // overwriting one in place.
+            // Keep the same number of past uploads as SelectedGifRepository keeps
+            // recents (MAX_RECENT_GIFS): the Uploads tab is just recents filtered
+            // to device picks, so any upload still referenced there needs a live
+            // file. Safe to delete the rest now -- deleting a file doesn't disturb
+            // any process still reading it via an existing file descriptor/mapping,
+            // unlike overwriting one in place.
             context.filesDir
-                .listFiles { file -> file.name.startsWith(UPLOADED_GIF_PREFIX) && file != destination }
+                .listFiles { file -> file.name.startsWith(UPLOADED_GIF_PREFIX) }
+                ?.sortedByDescending { it.lastModified() }
+                ?.drop(MAX_RECENT_GIFS)
                 ?.forEach { it.delete() }
 
             destination.absolutePath

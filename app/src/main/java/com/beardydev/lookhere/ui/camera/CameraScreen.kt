@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -45,11 +44,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -101,7 +103,17 @@ fun CameraScreen(
         return
     }
 
-    val previewView = remember { PreviewView(context) }
+    val previewView = remember {
+        PreviewView(context).apply {
+            // Default PERFORMANCE mode prefers a SurfaceView, which composites via
+            // its own hardware surface outside the normal View drawing/clipping
+            // pipeline -- it can render outside its logical bounds when placed in
+            // a more complex layout like this split-pane one. COMPATIBLE forces a
+            // TextureView, which is an ordinary hardware-accelerated View and
+            // correctly respects the bounds Compose assigns it.
+            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+        }
+    }
     var lastPhotoUri by remember { mutableStateOf<Uri?>(null) }
     // Default to selfie mode when there's no second screen to show the GIF on right
     // now -- folded shut (only the cover screen visible) or a plain single-display
@@ -141,47 +153,32 @@ fun CameraScreen(
         onDispose { rearDisplayGifController.setSuppressed(false) }
     }
 
-    // Keyed so Compose treats these as the same node across every reorder (front/rear
-    // camera, gifFirst, orientation) instead of disposing and recreating them -- the
-    // viewfinder in particular wraps a native PreviewView that must not be torn down
-    // and re-parented just because its position in the layout changed.
-    val gifPane = @Composable { paneModifier: Modifier ->
-        key("gif_pane") {
-            SelfieGifPane(gif = selectedGif, modifier = paneModifier)
-        }
-    }
-    val viewfinderPane = @Composable { paneModifier: Modifier ->
-        key("camera_preview") {
-            AndroidView(factory = { previewView }, modifier = paneModifier)
-        }
-    }
-
     Box(modifier = modifier.fillMaxSize()) {
         when {
-            !useFrontCamera -> viewfinderPane(Modifier.fillMaxSize())
+            // Keyed the same as the viewfinder inside SplitPane below: this shares
+            // a single remembered PreviewView between two different structural
+            // positions (this fullscreen branch vs. inside SplitPane), so without
+            // matching keys Compose could try to attach it to the new spot before
+            // detaching it from the old one -- "the specified child already has a
+            // parent."
+            !useFrontCamera -> key("camera_preview") {
+                AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
+            }
 
             // Selfie mode: there's no one else to show the cover screen to, so the
             // GIF plays in-frame alongside the viewfinder instead -- side by side in
             // landscape, stacked in portrait, whichever pane comes first per gifFirst.
-            isLandscape && gifFirst -> Row(Modifier.fillMaxSize()) {
-                gifPane(Modifier.weight(1f).fillMaxHeight())
-                viewfinderPane(Modifier.weight(1f).fillMaxHeight())
-            }
-
-            isLandscape -> Row(Modifier.fillMaxSize()) {
-                viewfinderPane(Modifier.weight(1f).fillMaxHeight())
-                gifPane(Modifier.weight(1f).fillMaxHeight())
-            }
-
-            gifFirst -> Column(Modifier.fillMaxSize()) {
-                gifPane(Modifier.weight(1f).fillMaxWidth())
-                viewfinderPane(Modifier.weight(1f).fillMaxWidth())
-            }
-
-            else -> Column(Modifier.fillMaxSize()) {
-                viewfinderPane(Modifier.weight(1f).fillMaxWidth())
-                gifPane(Modifier.weight(1f).fillMaxWidth())
-            }
+            else -> SplitPane(
+                isLandscape = isLandscape,
+                gifFirst = gifFirst,
+                gifContent = { SelfieGifPane(gif = selectedGif, modifier = Modifier) },
+                viewfinderContent = {
+                    key("camera_preview") {
+                        AndroidView(factory = { previewView }, modifier = Modifier)
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
 
         Box(
@@ -271,6 +268,91 @@ fun CameraScreen(
     }
 }
 
+/**
+ * Places [gifContent] and [viewfinderContent] into exactly half the available
+ * space each -- side by side in landscape, stacked in portrait -- with
+ * [gifFirst] choosing which comes first on screen.
+ *
+ * Both children are always composed, in the same fixed order, on every call:
+ * only their placement *coordinates* change here, never their position in
+ * the composition tree. That matters because viewfinderContent wraps a
+ * single shared, remembered PreviewView -- an earlier version of this let
+ * gifFirst change which composable (and which parent) hosted that PreviewView
+ * (via Row/Column + key()), which tore it down from one parent and
+ * re-attached it to another. That either crashed ("the specified child
+ * already has a parent") or, when it didn't crash, threw off the weight-based
+ * 50/50 split depending on timing. A custom Layout sidesteps both: the
+ * PreviewView's AndroidView is composed in the exact same spot every time,
+ * and swapping gifFirst only swaps which measured Placeable gets placed at
+ * which offset.
+ */
+@Composable
+private fun SplitPane(
+    isLandscape: Boolean,
+    gifFirst: Boolean,
+    gifContent: @Composable () -> Unit,
+    viewfinderContent: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Layout(
+        content = {
+            // Compose doesn't clip a child's drawing to its layout bounds by
+            // default -- measuring/placing each pane at exactly half (below) only
+            // controls where Compose *thinks* each pane is; it doesn't stop the
+            // camera preview from painting beyond that box if its own internal
+            // rendering wants to. clipToBounds() enforces the boundary regardless
+            // of what either pane tries to draw internally.
+            //
+            // propagateMinConstraints = true matters here: Box normally relaxes
+            // its own minimum constraint before passing constraints to its child
+            // (so a plain Box(Modifier.clipToBounds()) below would hand
+            // SelfieGifPane a *loose* 0..halfSize range instead of the exact
+            // fixed size measured just below). SelfieGifPane waits for a nonzero
+            // measured size before rendering anything, so on the first pass --
+            // with no content yet -- a loosely-constrained Box collapses to 0x0,
+            // and since its size started at 0x0 too, that "new" 0x0 never counts
+            // as a change, so it never gets a second chance to measure correctly.
+            Box(Modifier.clipToBounds(), propagateMinConstraints = true) { gifContent() }
+            Box(Modifier.clipToBounds(), propagateMinConstraints = true) { viewfinderContent() }
+        },
+        modifier = modifier,
+    ) { measurables, constraints ->
+        val (gifMeasurable, viewfinderMeasurable) = measurables
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
+
+        if (isLandscape) {
+            val halfWidth = width / 2
+            val paneConstraints = Constraints.fixed(halfWidth, height)
+            val gifPlaceable = gifMeasurable.measure(paneConstraints)
+            val viewfinderPlaceable = viewfinderMeasurable.measure(paneConstraints)
+            layout(width, height) {
+                if (gifFirst) {
+                    gifPlaceable.placeRelative(0, 0)
+                    viewfinderPlaceable.placeRelative(halfWidth, 0)
+                } else {
+                    viewfinderPlaceable.placeRelative(0, 0)
+                    gifPlaceable.placeRelative(halfWidth, 0)
+                }
+            }
+        } else {
+            val halfHeight = height / 2
+            val paneConstraints = Constraints.fixed(width, halfHeight)
+            val gifPlaceable = gifMeasurable.measure(paneConstraints)
+            val viewfinderPlaceable = viewfinderMeasurable.measure(paneConstraints)
+            layout(width, height) {
+                if (gifFirst) {
+                    gifPlaceable.placeRelative(0, 0)
+                    viewfinderPlaceable.placeRelative(0, halfHeight)
+                } else {
+                    viewfinderPlaceable.placeRelative(0, 0)
+                    gifPlaceable.placeRelative(0, halfHeight)
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun SelfieGifPane(gif: SelectedGif?, modifier: Modifier = Modifier) {
     // Track the pane's actual laid-out pixel size and pass it to Glide explicitly via
@@ -315,6 +397,16 @@ private fun SelfieGifPane(gif: SelectedGif?, modifier: Modifier = Modifier) {
                     // RequestManager, not this View's own lifecycle, so without an explicit
                     // clear() the discarded view's request/target is leaked and keeps
                     // decoding frames in the background.
+                    //
+                    // TODO: this onRelease fix was expected to resolve the "previous GIF
+                    // still showing after switching to selfie mode" bug, but it's been seen
+                    // recurring after further testing. New clue: backgrounding and
+                    // reopening the app (not a full process kill) also fixes the display,
+                    // which points away from this being a process-level leak and toward
+                    // something Activity-lifecycle-scoped instead (Glide's RequestManager
+                    // auto-pause/resume, or collectAsStateWithLifecycle's
+                    // repeatOnLifecycle restart) -- see the selfie_mode_stale_gif_bug
+                    // memory note for details. Revisit once current UI/UX work is done.
                     onRelease = { imageView -> Glide.with(imageView).clear(imageView) },
                 )
             }

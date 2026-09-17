@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.beardydev.lookhere.domain.model.SelectedGif
 import com.beardydev.lookhere.domain.model.stableKey
+import com.beardydev.lookhere.domain.repository.MAX_RECENT_GIFS
 import com.beardydev.lookhere.domain.repository.SelectedGifRepository
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
@@ -16,8 +17,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 
 private val Context.dataStore by preferencesDataStore(name = "look_here_settings")
-
-private const val MAX_RECENT_GIFS = 12
 
 class SelectedGifRepositoryImpl(private val context: Context) : SelectedGifRepository {
 
