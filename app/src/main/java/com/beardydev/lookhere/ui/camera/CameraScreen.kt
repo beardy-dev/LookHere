@@ -56,7 +56,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.beardydev.lookhere.LookHereApp
-import com.beardydev.lookhere.data.settings.SelectedGif
+import com.beardydev.lookhere.domain.model.SelectedGif
 import com.beardydev.lookhere.display.RearDisplayGifController
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -233,14 +233,20 @@ fun CameraScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 if (useFrontCamera) {
-                    FilledIconButton(onClick = { gifFirst = !gifFirst }) {
+                    FilledIconButton(
+                        onClick = { gifFirst = !gifFirst },
+                        modifier = Modifier.size(48.dp),
+                    ) {
                         Icon(
                             imageVector = if (isLandscape) Icons.Filled.SwapHorizontalCircle else Icons.Filled.SwapVerticalCircle,
                             contentDescription = if (isLandscape) "Swap sides" else "Swap top/bottom",
                         )
                     }
                 }
-                FilledIconButton(onClick = { useFrontCamera = !useFrontCamera }) {
+                FilledIconButton(
+                    onClick = { useFrontCamera = !useFrontCamera },
+                    modifier = Modifier.size(48.dp),
+                ) {
                     Icon(
                         imageVector = Icons.Filled.FlipCameraAndroid,
                         contentDescription = if (useFrontCamera) "Switch to rear camera" else "Switch to front camera",
@@ -303,6 +309,13 @@ private fun SelfieGifPane(gif: SelectedGif?, modifier: Modifier = Modifier) {
                                 Glide.with(imageView).asGif().load(File(gif.filePath)).apply(requestOptions).into(imageView)
                         }
                     },
+                    // Compose disposes this View outright every time key(gif) changes (a
+                    // fresh ImageView per gif, by design -- see comment above), but never
+                    // tells Glide about it: Glide's request is tied to the Activity-level
+                    // RequestManager, not this View's own lifecycle, so without an explicit
+                    // clear() the discarded view's request/target is leaked and keeps
+                    // decoding frames in the background.
+                    onRelease = { imageView -> Glide.with(imageView).clear(imageView) },
                 )
             }
         }
@@ -317,5 +330,6 @@ private fun PhotoThumbnail(uri: Uri, modifier: Modifier = Modifier) {
             ImageView(context).apply { scaleType = ImageView.ScaleType.CENTER_CROP }
         },
         update = { imageView -> Glide.with(imageView).load(uri).into(imageView) },
+        onRelease = { imageView -> Glide.with(imageView).clear(imageView) },
     )
 }

@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.beardydev.lookhere.domain.model.SelectedGif
+import com.beardydev.lookhere.domain.model.stableKey
+import com.beardydev.lookhere.domain.repository.SelectedGifRepository
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -16,7 +19,7 @@ private val Context.dataStore by preferencesDataStore(name = "look_here_settings
 
 private const val MAX_RECENT_GIFS = 12
 
-class SelectedGifRepository(private val context: Context) {
+class SelectedGifRepositoryImpl(private val context: Context) : SelectedGifRepository {
 
     private object Keys {
         val SOURCE = stringPreferencesKey("gif_source")
@@ -29,7 +32,7 @@ class SelectedGifRepository(private val context: Context) {
         val RECENT_GIFS_JSON = stringPreferencesKey("recent_gifs_json")
     }
 
-    val selectedGif: Flow<SelectedGif?> = context.dataStore.data.map { prefs ->
+    override val selectedGif: Flow<SelectedGif?> = context.dataStore.data.map { prefs ->
         when (prefs[Keys.SOURCE]) {
             "search" -> {
                 val id = prefs[Keys.ID]
@@ -47,11 +50,11 @@ class SelectedGifRepository(private val context: Context) {
         }
     }
 
-    val recentGifs: Flow<List<SelectedGif>> = context.dataStore.data.map { prefs ->
+    override val recentGifs: Flow<List<SelectedGif>> = context.dataStore.data.map { prefs ->
         prefs[Keys.RECENT_GIFS_JSON]?.let { json -> decodeRecents(json) } ?: emptyList()
     }
 
-    suspend fun save(gif: SelectedGif) {
+    override suspend fun save(gif: SelectedGif) {
         context.dataStore.edit { prefs ->
             when (gif) {
                 is SelectedGif.FromSearch -> {
@@ -79,7 +82,7 @@ class SelectedGifRepository(private val context: Context) {
         }
     }
 
-    suspend fun clear() {
+    override suspend fun clear() {
         context.dataStore.edit { prefs ->
             prefs.remove(Keys.SOURCE)
             prefs.remove(Keys.ID)
@@ -90,7 +93,7 @@ class SelectedGifRepository(private val context: Context) {
         }
     }
 
-    suspend fun getOrCreateCustomerId(): String {
+    override suspend fun getOrCreateCustomerId(): String {
         val existing = context.dataStore.data.first()[Keys.CUSTOMER_ID]
         if (existing != null) return existing
         val generated = UUID.randomUUID().toString()

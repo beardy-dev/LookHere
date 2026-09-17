@@ -1,15 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="background">#18120F</color>
-    <color name="surface">#241B18</color>
-    <color name="primary">#FF8A7B</color>
-    <color name="on_primary">#3D0F08</color>
-    <color name="secondary">#FFCE7A</color>
-    <color name="on_secondary">#402C00</color>
-    <color name="tertiary">#5FC2BA</color>
-    <color name="on_tertiary">#00332F</color>
-    <color name="accent">#FFB35C</color>
-    <color name="text_primary">#F5E9E3</color>
-    <color name="text_secondary">#C2AFA7</color>
-    <color name="error">#FF9A9E</color>
 </resources>

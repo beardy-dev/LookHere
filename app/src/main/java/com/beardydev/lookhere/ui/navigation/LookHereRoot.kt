@@ -37,7 +37,7 @@ fun LookHereRoot() {
     // and flaky enough that a GIF change can silently appear to do nothing on
     // the first try.
     val rearDisplayGifController = remember {
-        RearDisplayGifController(context as ComponentActivity, container.selectedGifRepository)
+        RearDisplayGifController(context as ComponentActivity, container.observeCoverScreenGif)
     }
     DisposableEffect(Unit) {
         rearDisplayGifController.start(scope)
@@ -73,7 +73,7 @@ fun LookHereRoot() {
                         viewModel = viewModel,
                         canCancel = canCancel,
                         onGifPicked = { picked ->
-                            scope.launch { container.selectedGifRepository.save(picked) }
+                            scope.launch { container.selectGif(picked) }
                             screen = Screen.Camera
                         },
                         onCancel = { screen = Screen.Camera },

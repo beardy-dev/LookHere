@@ -1,4 +1,4 @@
-package com.beardydev.lookhere.data.settings
+package com.beardydev.lookhere.domain.model
 
 import kotlinx.serialization.Serializable
 

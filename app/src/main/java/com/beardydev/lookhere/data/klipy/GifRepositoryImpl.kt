@@ -1,8 +1,11 @@
 package com.beardydev.lookhere.data.klipy
 
-class KlipyRepository(private val api: KlipyApi) {
+import com.beardydev.lookhere.domain.model.GifResult
+import com.beardydev.lookhere.domain.repository.GifRepository
 
-    suspend fun search(query: String, customerId: String): Result<List<GifResult>> {
+class GifRepositoryImpl(private val api: KlipyApi) : GifRepository {
+
+    override suspend fun search(query: String, customerId: String): Result<List<GifResult>> {
         return runCatching {
             api.search(query = query, customerId = customerId)
                 .data.data
@@ -11,7 +14,7 @@ class KlipyRepository(private val api: KlipyApi) {
         }
     }
 
-    suspend fun trending(customerId: String): Result<List<GifResult>> {
+    override suspend fun trending(customerId: String): Result<List<GifResult>> {
         return runCatching {
             api.trending(customerId = customerId)
                 .data.data

@@ -14,8 +14,8 @@ import androidx.window.area.WindowAreaController
 import androidx.window.area.WindowAreaInfo
 import androidx.window.area.WindowAreaPresentationSessionCallback
 import androidx.window.area.WindowAreaSessionPresenter
-import com.beardydev.lookhere.data.settings.SelectedGif
-import com.beardydev.lookhere.data.settings.SelectedGifRepository
+import com.beardydev.lookhere.domain.model.SelectedGif
+import com.beardydev.lookhere.domain.usecase.ObserveCoverScreenGifUseCase
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import java.io.File
@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalWindowApi::class)
 class RearDisplayGifController(
     private val activity: ComponentActivity,
-    private val selectedGifRepository: SelectedGifRepository,
+    private val observeCoverScreenGif: ObserveCoverScreenGifUseCase,
 ) {
     private val windowAreaController = WindowAreaController.getOrCreate()
     private val mainExecutor = ContextCompat.getMainExecutor(activity)
@@ -76,10 +76,9 @@ class RearDisplayGifController(
         job = scope.launch {
             combine(
                 windowAreaController.windowAreaInfos,
-                selectedGifRepository.selectedGif,
-                suppressed,
-            ) { infos, gif, isSuppressed -> Triple(infos, gif, isSuppressed) }
-                .collect { (infos, gif, isSuppressed) ->
+                observeCoverScreenGif(suppressed),
+            ) { infos, gif -> infos to gif }
+                .collect { (infos, gif) ->
                     latestGif = gif
 
                     val rearFacingInfo = infos.firstOrNull { it.type == WindowAreaInfo.Type.TYPE_REAR_FACING }
@@ -91,11 +90,8 @@ class RearDisplayGifController(
                         status == WindowAreaCapability.Status.WINDOW_AREA_STATUS_AVAILABLE ||
                             status == WindowAreaCapability.Status.WINDOW_AREA_STATUS_ACTIVE
 
-                    if (isSuppressed) {
-                        closeSession()
-                        return@collect
-                    }
-
+                    // gif is already null when suppressed (selfie mode plays it
+                    // in-frame on the main screen instead) -- no separate branch needed.
                     when {
                         gif == null -> closeSession()
                         status == WindowAreaCapability.Status.WINDOW_AREA_STATUS_AVAILABLE ->
@@ -150,6 +146,7 @@ class RearDisplayGifController(
     }
 
     private fun closeSession() {
+        imageView?.let { Glide.with(it).clear(it) }
         session?.close()
         session = null
         imageView = null

@@ -1,4 +1,4 @@
-package com.beardydev.lookhere.data.klipy
+package com.beardydev.lookhere.domain.model
 
 data class GifResult(
     val id: String,

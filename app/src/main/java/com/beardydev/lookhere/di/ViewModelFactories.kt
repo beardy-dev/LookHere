@@ -6,10 +6,6 @@ import com.beardydev.lookhere.ui.gifsearch.GifSearchViewModel
 
 fun AppContainer.gifSearchViewModelFactory() = viewModelFactory {
     initializer {
-        GifSearchViewModel(
-            klipyRepository = klipyRepository,
-            selectedGifRepository = selectedGifRepository,
-            klipyApiKeyConfigured = isKlipyApiKeyConfigured,
-        )
+        GifSearchViewModel(observeGifBrowseResults = observeGifBrowseResults)
     }
 }
