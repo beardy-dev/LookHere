@@ -9,6 +9,37 @@ second screen — or when the Fold is folded shut — it falls back to a selfie
 mode that shows the GIF and viewfinder side by side on the one screen you've
 got.
 
+## Download
+
+Grab the latest APK from the [Releases page](https://github.com/beardy-dev/LookHere/releases/latest).
+
+## Installing
+
+This isn't on the Play Store, so your phone needs to allow installing an
+APK from outside it:
+
+1. Download the `.apk` file from the [latest release](https://github.com/beardy-dev/LookHere/releases/latest)
+2. When you open it, Android will likely block the install and prompt you
+   to allow it — tap through to **Settings** and enable "Install unknown
+   apps" for whichever app you downloaded it with (Chrome, Files, etc.)
+3. You may also see a Play Protect warning like *"Unknown app"* or *"App
+   not verified"* — this is expected for any app distributed outside the
+   Play Store from a developer with no install history yet, not a sign
+   something is wrong. You can review the source code in this repo
+   yourself if you'd like to verify what it does before installing.
+4. Once allowed, open the APK again to install normally.
+
+## Permissions
+
+LookHere requests:
+
+- **Camera** — to show the viewfinder and take photos, obviously.
+- **Photos/Media** — to save your photos to the camera roll, and to let
+  you upload your own GIF from your device instead of searching.
+- **Internet** — to search GIFs via the [Klipy](https://klipy.com) API.
+
+That's it — no location, no contacts, no background access.
+
 ## Features
 
 - **GIF search** via the [Klipy](https://klipy.com) API (a Tenor-API
