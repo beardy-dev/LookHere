@@ -17,27 +17,30 @@ import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.FlipCameraAndroid
 import androidx.compose.material.icons.filled.GifBox
-import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SwapHorizontalCircle
 import androidx.compose.material.icons.filled.SwapVerticalCircle
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -60,9 +63,12 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -143,9 +149,18 @@ fun CameraScreen(
         }
     }
     var lastMedia by remember { mutableStateOf<CapturedMedia?>(null) }
-    var isVideoMode by remember { mutableStateOf(false) }
     var videoAvailable by remember { mutableStateOf(false) }
     val recordingState by cameraController.recordingState.collectAsStateWithLifecycle()
+    // Page 0 = photo, page 1 = video, capped at a single page when the device can't
+    // support video -- see the try/catch fallback in CameraController.bind().
+    val modePagerState = rememberPagerState(initialPage = 0) { if (videoAvailable) 2 else 1 }
+    val isVideoMode = modePagerState.currentPage == 1
+    LaunchedEffect(modePagerState.currentPage) {
+        if (isVideoMode && !hasRequestedAudioPermission) {
+            audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            hasRequestedAudioPermission = true
+        }
+    }
     // Default to selfie mode when there's no second screen to show the GIF on right
     // now -- folded shut (only the cover screen visible) or a plain single-display
     // phone. Only decided once per fresh entry to this screen; the user can still
@@ -219,108 +234,146 @@ fun CameraScreen(
             )
         }
 
-        Box(
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(24.dp),
+                .navigationBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            lastMedia?.let { media ->
-                MediaThumbnail(
-                    media = media,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .size(56.dp)
-                        .clickable {
-                            val uri = when (media) {
-                                is CapturedMedia.Photo -> media.uri
-                                is CapturedMedia.Video -> media.uri
-                            }
-                            val mimeType = when (media) {
-                                is CapturedMedia.Photo -> "image/*"
-                                is CapturedMedia.Video -> "video/*"
-                            }
-                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                setDataAndType(uri, mimeType)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
-                            context.startActivity(intent)
-                        },
-                )
-            }
-
-            FilledIconButton(
-                onClick = {
-                    when {
-                        !isVideoMode -> cameraController.takePhoto(
-                            onSaved = { uri ->
-                                lastMedia = CapturedMedia.Photo(uri)
-                                Toast.makeText(context, "Photo saved!", Toast.LENGTH_SHORT).show()
-                            },
-                            onError = { error ->
-                                Log.e("LookHereCamera", "Failed to save photo", error)
-                                Toast.makeText(context, "Couldn't save photo: ${error.message}", Toast.LENGTH_LONG).show()
-                            },
-                        )
-
-                        recordingState == RecordingState.Idle -> cameraController.startRecording(
-                            recordAudio = hasAudioPermission,
-                            onSaved = { uri ->
-                                lastMedia = CapturedMedia.Video(uri)
-                                Toast.makeText(context, "Video saved!", Toast.LENGTH_SHORT).show()
-                            },
-                            onError = { error ->
-                                Log.e("LookHereCamera", "Failed to save video", error)
-                                Toast.makeText(context, "Couldn't save video: ${error.message}", Toast.LENGTH_LONG).show()
-                            },
-                        )
-
-                        else -> cameraController.stopRecording()
-                    }
-                },
-                colors = if (isVideoMode && recordingState != RecordingState.Idle) {
-                    IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.error)
-                } else {
-                    IconButtonDefaults.filledIconButtonColors()
-                },
-                modifier = Modifier.align(Alignment.Center).size(72.dp),
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
             ) {
-                Icon(
-                    imageVector = when {
-                        !isVideoMode -> Icons.Filled.Camera
-                        recordingState == RecordingState.Idle -> Icons.Filled.FiberManualRecord
-                        else -> Icons.Filled.Stop
+                lastMedia?.let { media ->
+                    MediaThumbnail(
+                        media = media,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .size(56.dp)
+                            .clickable {
+                                val uri = when (media) {
+                                    is CapturedMedia.Photo -> media.uri
+                                    is CapturedMedia.Video -> media.uri
+                                }
+                                val mimeType = when (media) {
+                                    is CapturedMedia.Photo -> "image/*"
+                                    is CapturedMedia.Video -> "video/*"
+                                }
+                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(uri, mimeType)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                context.startActivity(intent)
+                            },
+                    )
+                }
+
+                FilledIconButton(
+                    onClick = {
+                        when {
+                            !isVideoMode -> cameraController.takePhoto(
+                                onSaved = { uri ->
+                                    lastMedia = CapturedMedia.Photo(uri)
+                                    Toast.makeText(context, "Photo saved!", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { error ->
+                                    Log.e("LookHereCamera", "Failed to save photo", error)
+                                    Toast.makeText(context, "Couldn't save photo: ${error.message}", Toast.LENGTH_LONG).show()
+                                },
+                            )
+
+                            recordingState == RecordingState.Idle -> cameraController.startRecording(
+                                recordAudio = hasAudioPermission,
+                                onSaved = { uri ->
+                                    lastMedia = CapturedMedia.Video(uri)
+                                    Toast.makeText(context, "Video saved!", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { error ->
+                                    Log.e("LookHereCamera", "Failed to save video", error)
+                                    Toast.makeText(context, "Couldn't save video: ${error.message}", Toast.LENGTH_LONG).show()
+                                },
+                            )
+
+                            else -> cameraController.stopRecording()
+                        }
                     },
-                    contentDescription = if (!isVideoMode) "Take photo" else if (recordingState == RecordingState.Idle) "Start recording" else "Stop recording",
-                    modifier = Modifier.size(36.dp),
-                )
-            }
+                    colors = if (isVideoMode && recordingState != RecordingState.Idle) {
+                        IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.error)
+                    } else {
+                        IconButtonDefaults.filledIconButtonColors()
+                    },
+                    modifier = Modifier.align(Alignment.Center).size(72.dp),
+                ) {
+                    Icon(
+                        imageVector = when {
+                            !isVideoMode -> Icons.Filled.Camera
+                            recordingState == RecordingState.Idle -> Icons.Filled.FiberManualRecord
+                            else -> Icons.Filled.Stop
+                        },
+                        contentDescription = if (!isVideoMode) "Take photo" else if (recordingState == RecordingState.Idle) "Start recording" else "Stop recording",
+                        modifier = Modifier.size(36.dp),
+                    )
+                }
 
-            Row(
-                modifier = Modifier.align(Alignment.CenterEnd),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                if (useFrontCamera) {
+                Row(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (useFrontCamera) {
+                        FilledIconButton(
+                            onClick = { gifFirst = !gifFirst },
+                            enabled = recordingState == RecordingState.Idle,
+                            modifier = Modifier.size(48.dp),
+                        ) {
+                            Icon(
+                                imageVector = if (isLandscape) Icons.Filled.SwapHorizontalCircle else Icons.Filled.SwapVerticalCircle,
+                                contentDescription = if (isLandscape) "Swap sides" else "Swap top/bottom",
+                            )
+                        }
+                    }
                     FilledIconButton(
-                        onClick = { gifFirst = !gifFirst },
+                        onClick = { useFrontCamera = !useFrontCamera },
                         enabled = recordingState == RecordingState.Idle,
                         modifier = Modifier.size(48.dp),
                     ) {
                         Icon(
-                            imageVector = if (isLandscape) Icons.Filled.SwapHorizontalCircle else Icons.Filled.SwapVerticalCircle,
-                            contentDescription = if (isLandscape) "Swap sides" else "Swap top/bottom",
+                            imageVector = Icons.Filled.FlipCameraAndroid,
+                            contentDescription = if (useFrontCamera) "Switch to rear camera" else "Switch to front camera",
                         )
                     }
                 }
-                FilledIconButton(
-                    onClick = { useFrontCamera = !useFrontCamera },
-                    enabled = recordingState == RecordingState.Idle,
-                    modifier = Modifier.size(48.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.FlipCameraAndroid,
-                        contentDescription = if (useFrontCamera) "Switch to rear camera" else "Switch to front camera",
+            }
+
+            // Mimics the stock camera app's mode selector: PHOTO/VIDEO slide
+            // horizontally beneath the shutter, snapping to center, with the
+            // centered one highlighted -- swiping is how the shutter's mode
+            // changes, not a separate toggle button. A narrow fixed page size
+            // (instead of the default full-width page) keeps both labels
+            // close together and both visible at rest, rather than one
+            // filling the screen and hiding the other off to the side.
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                val itemWidth = 84.dp
+                val sidePadding = (maxWidth - itemWidth) / 2
+                HorizontalPager(
+                    state = modePagerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(32.dp),
+                    contentPadding = PaddingValues(horizontal = sidePadding),
+                    pageSize = PageSize.Fixed(itemWidth),
+                    pageSpacing = 16.dp,
+                    userScrollEnabled = recordingState == RecordingState.Idle,
+                ) { page ->
+                    val selected = modePagerState.currentPage == page
+                    Text(
+                        text = if (page == 0) "PHOTO" else "VIDEO",
+                        textAlign = TextAlign.Center,
+                        color = if (selected) Color.White else Color.White.copy(alpha = 0.4f),
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = if (selected) 15.sp else 13.sp,
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
@@ -344,24 +397,7 @@ fun CameraScreen(
                 .align(Alignment.TopEnd)
                 .statusBarsPadding()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FilledIconToggleButton(
-                checked = isVideoMode,
-                onCheckedChange = { checked ->
-                    if (checked && !hasRequestedAudioPermission) {
-                        audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                        hasRequestedAudioPermission = true
-                    }
-                    isVideoMode = checked
-                },
-                enabled = videoAvailable,
-            ) {
-                Icon(
-                    imageVector = if (isVideoMode) Icons.Filled.Videocam else Icons.Filled.PhotoCamera,
-                    contentDescription = if (isVideoMode) "Switch to photo mode" else "Switch to video mode",
-                )
-            }
             FilledIconButton(onClick = onChangeGifRequested) {
                 Icon(
                     imageVector = Icons.Filled.GifBox,
