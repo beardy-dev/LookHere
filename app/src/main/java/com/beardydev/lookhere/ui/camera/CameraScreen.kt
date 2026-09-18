@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.util.Log
 import android.widget.ImageView
@@ -193,6 +194,27 @@ fun CameraScreen(
         // recording first so the file finalizes as a valid (if short) clip instead of
         // being corrupted/truncated.
         onDispose { cameraController.unbind() }
+    }
+
+    // ImageCapture/VideoCapture only read the display rotation once, at bind() time --
+    // they don't track it afterward on their own. This screen keeps the same bound
+    // session across orientation changes (the manifest handles them itself, no Activity
+    // recreation, and rotating doesn't trigger a rebind above), so without this, a photo
+    // or video shot after rotating -- without also flipping the camera -- saves rotated
+    // wrong. A DisplayManager listener tracks Surface.ROTATION_* directly instead of
+    // bucketing raw sensor degrees, which stays correct across this device's different
+    // natural orientations (inner screen vs. cover screen).
+    DisposableEffect(cameraController) {
+        val displayManager = context.getSystemService(DisplayManager::class.java)
+        val listener = object : DisplayManager.DisplayListener {
+            override fun onDisplayAdded(displayId: Int) = Unit
+            override fun onDisplayRemoved(displayId: Int) = Unit
+            override fun onDisplayChanged(displayId: Int) {
+                cameraController.setTargetRotation(ContextCompat.getDisplayOrDefault(context).rotation)
+            }
+        }
+        displayManager.registerDisplayListener(listener, null)
+        onDispose { displayManager.unregisterDisplayListener(listener) }
     }
 
     // Selfie mode shows the GIF in-frame instead of on the cover screen (there's no

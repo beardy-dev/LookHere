@@ -72,6 +72,11 @@ class CameraController(private val context: Context) {
         }
         val capture = ImageCapture.Builder().build()
         val video = VideoCapture.withOutput(recorder)
+        // previewView.display can be null this early (not attached to a window yet),
+        // so read the current rotation off the context instead of the view.
+        val currentRotation = ContextCompat.getDisplayOrDefault(context).rotation
+        capture.targetRotation = currentRotation
+        video.targetRotation = currentRotation
 
         provider.unbindAll()
         // Concurrent Preview+ImageCapture+VideoCapture can fail on lower camera
@@ -89,6 +94,17 @@ class CameraController(private val context: Context) {
         cameraProvider = provider
         imageCapture = capture
         videoCapture = if (videoAvailable) video else null
+    }
+
+    // ImageCapture/VideoCapture only pick up the display rotation that was current at
+    // bind() time -- they don't track it afterward on their own. Since this screen keeps
+    // the same bound session across orientation changes (no rebind on rotate, only on a
+    // front/rear flip), the caller needs to push rotation updates here as the device
+    // turns, or a photo/video shot after rotating without flipping cameras saves rotated
+    // wrong. Takes a Surface.ROTATION_* constant.
+    fun setTargetRotation(rotation: Int) {
+        imageCapture?.targetRotation = rotation
+        videoCapture?.targetRotation = rotation
     }
 
     fun unbind() {
