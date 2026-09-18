@@ -14,10 +14,14 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.view.PreviewView
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.FlipCameraAndroid
 import androidx.compose.material.icons.filled.GifBox
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SwapHorizontalCircle
 import androidx.compose.material.icons.filled.SwapVerticalCircle
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,9 +34,13 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -65,6 +73,11 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import java.io.File
 import kotlinx.coroutines.launch
+
+sealed interface CapturedMedia {
+    data class Photo(val uri: Uri) : CapturedMedia
+    data class Video(val uri: Uri) : CapturedMedia
+}
 
 @Composable
 fun CameraScreen(
@@ -104,6 +117,20 @@ fun CameraScreen(
         return
     }
 
+    var hasAudioPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED
+        )
+    }
+    // RECORD_AUDIO is requested lazily -- only the first time the user switches into
+    // video mode, not upfront alongside CAMERA -- to match this app's minimal-permissions
+    // stance. Guarded so re-toggling video mode doesn't re-prompt after the first ask.
+    var hasRequestedAudioPermission by remember { mutableStateOf(false) }
+    val audioPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> hasAudioPermission = granted }
+
     val previewView = remember {
         PreviewView(context).apply {
             // Default PERFORMANCE mode prefers a SurfaceView, which composites via
@@ -115,7 +142,10 @@ fun CameraScreen(
             implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         }
     }
-    var lastPhotoUri by remember { mutableStateOf<Uri?>(null) }
+    var lastMedia by remember { mutableStateOf<CapturedMedia?>(null) }
+    var isVideoMode by remember { mutableStateOf(false) }
+    var videoAvailable by remember { mutableStateOf(false) }
+    val recordingState by cameraController.recordingState.collectAsStateWithLifecycle()
     // Default to selfie mode when there's no second screen to show the GIF on right
     // now -- folded shut (only the cover screen visible) or a plain single-display
     // phone. Only decided once per fresh entry to this screen; the user can still
@@ -139,7 +169,14 @@ fun CameraScreen(
 
     DisposableEffect(lifecycleOwner, useFrontCamera) {
         val selector = if (useFrontCamera) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
-        scope.launch { cameraController.bind(lifecycleOwner, previewView, selector) }
+        scope.launch {
+            cameraController.bind(lifecycleOwner, previewView, selector)
+            videoAvailable = cameraController.videoAvailable
+        }
+        // A camera flip -- manual, or the automatic fold-triggered fallback below --
+        // tears down the bound session via unbind(), which itself stops any in-progress
+        // recording first so the file finalizes as a valid (if short) clip instead of
+        // being corrupted/truncated.
         onDispose { cameraController.unbind() }
     }
 
@@ -189,15 +226,23 @@ fun CameraScreen(
                 .navigationBarsPadding()
                 .padding(24.dp),
         ) {
-            lastPhotoUri?.let { uri ->
-                PhotoThumbnail(
-                    uri = uri,
+            lastMedia?.let { media ->
+                MediaThumbnail(
+                    media = media,
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .size(56.dp)
                         .clickable {
+                            val uri = when (media) {
+                                is CapturedMedia.Photo -> media.uri
+                                is CapturedMedia.Video -> media.uri
+                            }
+                            val mimeType = when (media) {
+                                is CapturedMedia.Photo -> "image/*"
+                                is CapturedMedia.Video -> "video/*"
+                            }
                             val intent = Intent(Intent.ACTION_VIEW).apply {
-                                setDataAndType(uri, "image/*")
+                                setDataAndType(uri, mimeType)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
                             context.startActivity(intent)
@@ -207,22 +252,47 @@ fun CameraScreen(
 
             FilledIconButton(
                 onClick = {
-                    cameraController.takePhoto(
-                        onSaved = { uri ->
-                            lastPhotoUri = uri
-                            Toast.makeText(context, "Photo saved!", Toast.LENGTH_SHORT).show()
-                        },
-                        onError = { error ->
-                            Log.e("LookHereCamera", "Failed to save photo", error)
-                            Toast.makeText(context, "Couldn't save photo: ${error.message}", Toast.LENGTH_LONG).show()
-                        },
-                    )
+                    when {
+                        !isVideoMode -> cameraController.takePhoto(
+                            onSaved = { uri ->
+                                lastMedia = CapturedMedia.Photo(uri)
+                                Toast.makeText(context, "Photo saved!", Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { error ->
+                                Log.e("LookHereCamera", "Failed to save photo", error)
+                                Toast.makeText(context, "Couldn't save photo: ${error.message}", Toast.LENGTH_LONG).show()
+                            },
+                        )
+
+                        recordingState == RecordingState.Idle -> cameraController.startRecording(
+                            recordAudio = hasAudioPermission,
+                            onSaved = { uri ->
+                                lastMedia = CapturedMedia.Video(uri)
+                                Toast.makeText(context, "Video saved!", Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { error ->
+                                Log.e("LookHereCamera", "Failed to save video", error)
+                                Toast.makeText(context, "Couldn't save video: ${error.message}", Toast.LENGTH_LONG).show()
+                            },
+                        )
+
+                        else -> cameraController.stopRecording()
+                    }
+                },
+                colors = if (isVideoMode && recordingState != RecordingState.Idle) {
+                    IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.error)
+                } else {
+                    IconButtonDefaults.filledIconButtonColors()
                 },
                 modifier = Modifier.align(Alignment.Center).size(72.dp),
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Camera,
-                    contentDescription = "Take photo",
+                    imageVector = when {
+                        !isVideoMode -> Icons.Filled.Camera
+                        recordingState == RecordingState.Idle -> Icons.Filled.FiberManualRecord
+                        else -> Icons.Filled.Stop
+                    },
+                    contentDescription = if (!isVideoMode) "Take photo" else if (recordingState == RecordingState.Idle) "Start recording" else "Stop recording",
                     modifier = Modifier.size(36.dp),
                 )
             }
@@ -234,6 +304,7 @@ fun CameraScreen(
                 if (useFrontCamera) {
                     FilledIconButton(
                         onClick = { gifFirst = !gifFirst },
+                        enabled = recordingState == RecordingState.Idle,
                         modifier = Modifier.size(48.dp),
                     ) {
                         Icon(
@@ -244,6 +315,7 @@ fun CameraScreen(
                 }
                 FilledIconButton(
                     onClick = { useFrontCamera = !useFrontCamera },
+                    enabled = recordingState == RecordingState.Idle,
                     modifier = Modifier.size(48.dp),
                 ) {
                     Icon(
@@ -254,12 +326,42 @@ fun CameraScreen(
             }
         }
 
+        if (recordingState is RecordingState.InProgress) {
+            Text(
+                text = formatDuration((recordingState as RecordingState.InProgress).durationMillis),
+                color = MaterialTheme.colorScheme.onError,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(16.dp)
+                    .background(MaterialTheme.colorScheme.error, RoundedCornerShape(8.dp))
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+            )
+        }
+
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .statusBarsPadding()
                 .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            FilledIconToggleButton(
+                checked = isVideoMode,
+                onCheckedChange = { checked ->
+                    if (checked && !hasRequestedAudioPermission) {
+                        audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        hasRequestedAudioPermission = true
+                    }
+                    isVideoMode = checked
+                },
+                enabled = videoAvailable,
+            ) {
+                Icon(
+                    imageVector = if (isVideoMode) Icons.Filled.Videocam else Icons.Filled.PhotoCamera,
+                    contentDescription = if (isVideoMode) "Switch to photo mode" else "Switch to video mode",
+                )
+            }
             FilledIconButton(onClick = onChangeGifRequested) {
                 Icon(
                     imageVector = Icons.Filled.GifBox,
@@ -268,6 +370,13 @@ fun CameraScreen(
             }
         }
     }
+}
+
+private fun formatDuration(durationMillis: Long): String {
+    val totalSeconds = durationMillis / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%02d:%02d".format(minutes, seconds)
 }
 
 /**
@@ -410,12 +519,19 @@ private fun SelfieGifPane(gif: SelectedGif?, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PhotoThumbnail(uri: Uri, modifier: Modifier = Modifier) {
+private fun MediaThumbnail(media: CapturedMedia, modifier: Modifier = Modifier) {
+    val uri = when (media) {
+        is CapturedMedia.Photo -> media.uri
+        is CapturedMedia.Video -> media.uri
+    }
     AndroidView(
         modifier = modifier,
         factory = { context ->
             ImageView(context).apply { scaleType = ImageView.ScaleType.CENTER_CROP }
         },
+        // Glide resolves a video Uri to a decoded frame thumbnail the same way it
+        // resolves an image Uri to a bitmap -- no separate thumbnail-generation path
+        // needed for CapturedMedia.Video.
         update = { imageView -> Glide.with(imageView).load(uri).into(imageView) },
         onRelease = { imageView -> Glide.with(imageView).clear(imageView) },
     )
