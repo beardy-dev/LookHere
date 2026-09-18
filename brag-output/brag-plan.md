@@ -16,8 +16,10 @@ corporate, because the app genuinely only does this one thing well: make
 picture time more fun for the kid and easier for the parent.
 
 ## Hook (first 2-3 seconds)
-Bold type, alone on the cream background: **"Kids won't look at the camera."**
-A beat of recognition before the reveal — no logo yet, just the problem.
+Bold type, alone on the cream background: **"Getting your kids to look at
+you while you snap a picture is hard."** A beat of recognition before the
+reveal — no logo yet, just the problem. (Held for 4.5s, longer than a
+typical hook, to give this longer sentence room to actually be read.)
 
 ## Key moments (the middle)
 - The GIF picker: real search UI, typing a search and landing on a
@@ -31,8 +33,8 @@ A beat of recognition before the reveal — no logo yet, just the problem.
   that got the GIF is the shot that took the picture.
 
 ## Outro / punchline
-Logo + wordmark on the cream/primary palette, then the tagline: **"Finally, a
-good picture."** Small byline: "Any phone. Even more fun on a Fold."
+Logo + wordmark on the cream/primary palette, then the tagline: **"Finally,
+taking pictures can be fun!"** Small byline: "More Fun. More Memories."
 
 ## User flow worth showing
 1. **Entry** — open the GIF picker, search, pick a GIF.
@@ -51,7 +53,8 @@ good picture."** Small byline: "Any phone. Even more fun on a Fold."
   enough on its own.
 
 ## Format: landscape — 1920x1080
-## Duration: 20s
+## Duration: 22s (bumped from 20s: the new hook line is longer and needs
+more settled reading time — see Scene 1 below)
 
 ## Visual identity (from the project)
 - Background: `#FFF8F1` (light mode app background — warm cream)
@@ -96,9 +99,12 @@ LookHere. 📸
 
 ## Storyboard
 
-### Scene 1 — Hook — 2.5s
-Cream background (`#FFF8F1`), centered bold dark text: "Kids won't look at
-the camera." No logo, no chrome — just the problem, stated flat.
+### Scene 1 — Hook — 4.5s
+Cream background (`#FFF8F1`), centered bold dark text: "Getting your kids
+to look at you while you snap a picture is hard." No logo, no chrome —
+just the problem, stated flat. Longer hold than usual (4.5s) because this
+line is 13 words — the reading-time floor (~0.3s/word plus entrance time)
+needs it.
 Sequential/interaction: none
 Audio intent: quiet, a little wry — let the line land in silence-ish space
 before the beat kicks in
@@ -110,8 +116,8 @@ Transition mood: clean → Scene 2
 Simple animated illustration of a single phone: the screen lights up with a
 bright, bouncy sparkle/GIF-shaped icon, then a small camera-viewfinder icon
 badges in alongside it — one phone, one screen, now with something fun on
-it. Text overlay: "So we gave it something worth looking at." Uses the
-app's primary/accent colors.
+it. Text overlay: "So we made it a little more interesting for them." Uses
+the app's primary/accent colors.
 Sequential/interaction: yes — the GIF icon lights up first, the camera
 badge follows a beat later
 Audio intent: a small delighted "aha" — playful, not smug
@@ -153,8 +159,8 @@ Transition mood: hard → Scene 5
 
 ### Scene 5 — Outro / punchline — 2.48s
 App icon + "LookHere" wordmark centered on the cream background, primary-
-color accent underline. Tagline beneath: "Finally, a good picture." Small
-byline, smaller/muted text: "Any phone. Even more fun on a Fold."
+color accent underline. Tagline beneath: "Finally, taking pictures can be
+fun!" Small byline, smaller/muted text: "More Fun. More Memories."
 Sequential/interaction: none
 Audio intent: warm settle, confident close
 Audio-coupled idea: none
@@ -165,5 +171,7 @@ Transition mood: soft (end card, no further transition)
 **Audio summary:** A warm, upbeat 120 BPM bed carries the whole video at
 steady energy, swelling slightly into the reveal and pulling down cleanly
 into the outro; sparse, motion-matched UI/shutter SFX mark the typed
-search, shutter tap, and thumbnail pop-in, timed to the bundled track's
-strong cues around 16-20s for the hero hold's payoff.
+search, shutter tap, and thumbnail pop-in. The shutter tap and thumbnail
+pop are beat-locked to the bundled track's real strong cues at 17.52s and
+18.52s (shifted from the original 16.02s/16.52s targets to land correctly
+after the hook grew from 2.5s to 4.5s).

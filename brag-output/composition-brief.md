@@ -7,7 +7,9 @@ Create a short launch-style brag video for LookHere.
 - Composition directory: `brag-output/composition/`
 - Rendered video: `brag-output/brag.mp4`
 - Format: landscape — 1920x1080
-- Duration: 20 seconds
+- Duration: 22 seconds (Scene 1 grew from 3.5s to 4.5s to give the longer
+  hook line its reading-time floor; every later scene start shifted by the
+  same +1s as a result)
 
 ## Source Material
 - Project root: repo root (native Android app, not a website)
@@ -70,10 +72,10 @@ Create a short launch-style brag video for LookHere.
 Use the storyboard in `brag-output/brag-plan.md` as the creative contract.
 
 Scene summary:
-1. Hook — 2.5s — "Kids won't look at the camera." alone on cream background.
+1. Hook — 4.5s (bumped from 3.5s for reading-time) — "Getting your kids to look at you while you snap a picture is hard." alone on cream background.
 2. Reveal — 3s — illustrated single-phone concept: the screen lights up
    with a GIF-shaped icon, then a small camera-viewfinder icon badges in
-   alongside it. Caption: "So we gave it something worth looking at."
+   alongside it. Caption: "So we made it a little more interesting for them"
 3. Flow: entry — 3.5s — real screenshot of the GIF picker (search bar),
    simulated typing of "good night" character by character.
 4. Flow: hero hold — 8.52s — ONE real screenshot (the selfie split-pane,
@@ -83,8 +85,7 @@ Scene summary:
    a simulated shutter tap (at the real shutter button's on-screen
    position in that same screenshot) fires a flash and a thumbnail
    pop-in — no image swap, no scene cut mid-action.
-5. Outro — 2.48s — app icon + "LookHere" wordmark + "Finally, a good
-   picture." + small "Any phone. Even more fun on a Fold." byline.
+5. Outro — 2.48s — app icon + "LookHere" wordmark + "Finally, taking pictures can be fun!" + small "More Fun. More Memories." byline.
 
 ## Audio
 - Audio role: warm upbeat bed with tasteful UI-accurate SFX
