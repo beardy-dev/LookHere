@@ -5,7 +5,7 @@ import com.beardydev.lookhere.domain.model.GifResult
 import com.beardydev.lookhere.domain.model.SelectedGif
 import com.beardydev.lookhere.domain.model.TrendingState
 
-enum class BrowseTab { RECENT, UPLOADS, TRENDING }
+enum class BrowseTab { TRENDING, RECENT, UPLOADS }
 
 sealed class GifSearchUiState {
     /** Blank query: the tabbed Recent/Uploads/Trending area. */

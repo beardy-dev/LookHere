@@ -170,7 +170,7 @@ retains an upload-key recovery path even if you lose your local copy.
 
 ## Versioning
 
-Follows [semantic versioning](https://semver.org/); current version `0.3.0`.
+Follows [semantic versioning](https://semver.org/); current version `0.3.1`.
 `versionCode` is derived from the semver string
 (`major * 10_000 + minor * 100 + patch`) so it stays in step with
 `versionName` and keeps increasing across releases.

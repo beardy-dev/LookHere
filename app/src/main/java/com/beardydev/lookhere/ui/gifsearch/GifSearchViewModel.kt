@@ -6,7 +6,9 @@ import com.beardydev.lookhere.domain.model.GifBrowseResult
 import com.beardydev.lookhere.domain.model.SelectedGif
 import com.beardydev.lookhere.domain.model.TrendingState
 import com.beardydev.lookhere.domain.usecase.ObserveGifBrowseResultsUseCase
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +24,11 @@ class GifSearchViewModel(
 
     private val query = MutableStateFlow("")
     private val retryTick = MutableStateFlow(0)
-    private val selectedTab = MutableStateFlow(BrowseTab.RECENT)
+    private val selectedTab = MutableStateFlow(BrowseTab.TRENDING)
+    // Buffered (not conflated to 0) so a scroll-triggered load-more that fires while
+    // the previous page is still in flight isn't dropped, but capped at 1 so a burst
+    // of scroll events only ever queues a single extra fetch, not one per event.
+    private val loadMoreTrending = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     // retryTick lets retry() re-trigger a lookup even for an unchanged query,
     // which distinctUntilChanged() would otherwise suppress. It restarts
@@ -33,14 +39,14 @@ class GifSearchViewModel(
     ) { text, _ -> text }
 
     val uiState: StateFlow<GifSearchUiState> = combine(
-        observeGifBrowseResults(searchTrigger),
+        observeGifBrowseResults(searchTrigger, loadMoreTrending),
         selectedTab,
     ) { result, tab -> result.toUiState(tab) }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
             GifSearchUiState.Browsing(
-                selectedTab = BrowseTab.RECENT,
+                selectedTab = BrowseTab.TRENDING,
                 recent = emptyList(),
                 uploads = emptyList(),
                 trending = TrendingState.Loading,
@@ -57,6 +63,10 @@ class GifSearchViewModel(
 
     fun retry() {
         retryTick.update { it + 1 }
+    }
+
+    fun onTrendingLoadMore() {
+        loadMoreTrending.tryEmit(Unit)
     }
 }
 

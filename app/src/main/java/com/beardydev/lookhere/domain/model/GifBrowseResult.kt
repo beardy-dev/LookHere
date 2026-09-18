@@ -14,6 +14,15 @@ sealed interface GifBrowseResult {
 
 sealed interface TrendingState {
     data object Loading : TrendingState
-    data class Loaded(val items: List<GifResult>) : TrendingState
+
+    /** [isLoadingMore] is true while a next page fetch (triggered by scrolling
+     *  near the end) is in flight; [hasNext] says whether there's a next page
+     *  left to load at all. */
+    data class Loaded(
+        val items: List<GifResult>,
+        val hasNext: Boolean = false,
+        val isLoadingMore: Boolean = false,
+    ) : TrendingState
+
     data class Error(val error: AppError) : TrendingState
 }

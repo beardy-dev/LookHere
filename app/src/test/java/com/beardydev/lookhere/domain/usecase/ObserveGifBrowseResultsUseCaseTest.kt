@@ -2,6 +2,7 @@ package com.beardydev.lookhere.domain.usecase
 
 import com.beardydev.lookhere.domain.error.AppError
 import com.beardydev.lookhere.domain.model.GifBrowseResult
+import com.beardydev.lookhere.domain.model.GifPage
 import com.beardydev.lookhere.domain.model.GifResult
 import com.beardydev.lookhere.domain.model.SelectedGif
 import com.beardydev.lookhere.domain.model.TrendingState
@@ -32,7 +33,7 @@ class ObserveGifBrowseResultsUseCaseTest {
     fun `blank query browses recents and trending together`() = runTest {
         val selectedGifRepository = FakeSelectedGifRepository(initialRecents = listOf(recent))
         val useCase = ObserveGifBrowseResultsUseCase(
-            gifRepository = FakeGifRepository(trendingResult = Result.success(listOf(gif))),
+            gifRepository = FakeGifRepository(trendingResult = Result.success(GifPage(listOf(gif), hasNext = false))),
             selectedGifRepository = selectedGifRepository,
             isApiKeyConfigured = true,
         )
@@ -42,7 +43,41 @@ class ObserveGifBrowseResultsUseCaseTest {
         assertEquals(
             listOf(
                 GifBrowseResult.Browsing(recents = listOf(recent), trending = TrendingState.Loading),
-                GifBrowseResult.Browsing(recents = listOf(recent), trending = TrendingState.Loaded(listOf(gif))),
+                GifBrowseResult.Browsing(recents = listOf(recent), trending = TrendingState.Loaded(listOf(gif), hasNext = false)),
+            ),
+            results,
+        )
+    }
+
+    @Test
+    fun `scrolling near the end of trending loads and appends the next page`() = runTest {
+        val page1 = GifResult(id = "1", previewUrl = "p1", fullUrl = "f1", description = "one")
+        val page2 = GifResult(id = "2", previewUrl = "p2", fullUrl = "f2", description = "two")
+        val useCase = ObserveGifBrowseResultsUseCase(
+            gifRepository = FakeGifRepository(
+                trendingPages = mapOf(
+                    1 to Result.success(GifPage(listOf(page1), hasNext = true)),
+                    2 to Result.success(GifPage(listOf(page2), hasNext = false)),
+                ),
+            ),
+            selectedGifRepository = FakeSelectedGifRepository(),
+            isApiKeyConfigured = true,
+        )
+
+        val results = useCase(flowOf(""), loadMoreTrending = flowOf(Unit)).take(4).toList()
+
+        assertEquals(
+            listOf(
+                GifBrowseResult.Browsing(recents = emptyList(), trending = TrendingState.Loading),
+                GifBrowseResult.Browsing(recents = emptyList(), trending = TrendingState.Loaded(listOf(page1), hasNext = true)),
+                GifBrowseResult.Browsing(
+                    recents = emptyList(),
+                    trending = TrendingState.Loaded(listOf(page1), hasNext = true, isLoadingMore = true),
+                ),
+                GifBrowseResult.Browsing(
+                    recents = emptyList(),
+                    trending = TrendingState.Loaded(listOf(page1, page2), hasNext = false),
+                ),
             ),
             results,
         )

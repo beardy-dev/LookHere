@@ -3,6 +3,7 @@ package com.beardydev.lookhere.ui.gifsearch
 import android.net.Uri
 import android.widget.ImageView
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,14 +14,19 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Search
@@ -29,6 +35,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SecondaryTabRow
@@ -36,12 +44,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -64,27 +76,45 @@ fun GifSearchScreen(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BackHandler(enabled = canCancel) { onCancel() }
-
     var query by rememberSaveable { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // A tap on any GIF (grid, recents, uploads, or a fresh device upload) opens a
+    // preview instead of picking it outright -- picking only actually happens on
+    // the preview's confirm. Backing out of the preview (X, or the system back
+    // button) returns to this same tabbed view with `query` untouched, since it's
+    // just local state here, not a navigation change.
+    var previewedGif by remember { mutableStateOf<SelectedGif?>(null) }
     val launchUpload = rememberGifUploadLauncher { filePath ->
-        onGifPicked(SelectedGif.FromDevice(filePath))
+        previewedGif = SelectedGif.FromDevice(filePath)
     }
 
-    GifSearchContent(
-        uiState = uiState,
-        query = query,
-        onQueryChange = {
-            query = it
-            viewModel.onQueryChange(it)
-        },
-        onUploadClick = launchUpload,
-        onGifPicked = onGifPicked,
-        onTabSelected = viewModel::onTabSelected,
-        onRetry = viewModel::retry,
-        modifier = modifier,
-    )
+    val gifToPreview = previewedGif
+    if (gifToPreview != null) {
+        BackHandler { previewedGif = null }
+        GifPreviewScreen(
+            gif = gifToPreview,
+            onConfirm = { onGifPicked(gifToPreview) },
+            onCancel = { previewedGif = null },
+            modifier = modifier,
+        )
+    } else {
+        BackHandler(enabled = canCancel) { onCancel() }
+        GifSearchContent(
+            uiState = uiState,
+            query = query,
+            onQueryChange = {
+                query = it
+                viewModel.onQueryChange(it)
+            },
+            onUploadClick = launchUpload,
+            onGifPicked = { previewedGif = it },
+            onTabSelected = viewModel::onTabSelected,
+            onTrendingLoadMore = viewModel::onTrendingLoadMore,
+            onRetry = viewModel::retry,
+            modifier = modifier,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,6 +126,7 @@ private fun GifSearchContent(
     onUploadClick: () -> Unit,
     onGifPicked: (SelectedGif) -> Unit,
     onTabSelected: (BrowseTab) -> Unit,
+    onTrendingLoadMore: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -116,6 +147,17 @@ private fun GifSearchContent(
                 modifier = Modifier.weight(1f),
                 placeholder = { Text("Search KLIPY") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    // Clears the query, which drops SearchResults/SearchLoading/SearchError
+                    // straight back to the Browsing tabbed view underneath -- that's just
+                    // whatever GifSearchUiState a blank query already produces, no separate
+                    // "return to tabs" state to manage.
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear search")
+                        }
+                    }
+                },
             )
             Spacer(Modifier.width(8.dp))
             FilledIconButton(
@@ -132,6 +174,7 @@ private fun GifSearchContent(
                     state = uiState,
                     onTabSelected = onTabSelected,
                     onGifPicked = onGifPicked,
+                    onTrendingLoadMore = onTrendingLoadMore,
                     onRetry = onRetry,
                 )
 
@@ -153,6 +196,7 @@ private fun BrowsingContent(
     state: GifSearchUiState.Browsing,
     onTabSelected: (BrowseTab) -> Unit,
     onGifPicked: (SelectedGif) -> Unit,
+    onTrendingLoadMore: () -> Unit,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -190,7 +234,12 @@ private fun BrowsingContent(
                             CircularProgressIndicator()
                         }
 
-                    is TrendingState.Loaded -> GifResultGrid(items = trending.items, onGifPicked = onGifPicked)
+                    is TrendingState.Loaded -> GifResultGrid(
+                        items = trending.items,
+                        onGifPicked = onGifPicked,
+                        onLoadMore = onTrendingLoadMore,
+                        isLoadingMore = trending.isLoadingMore,
+                    )
 
                     is TrendingState.Error -> ErrorContent(error = trending.error, onRetry = onRetry)
                 }
@@ -216,7 +265,7 @@ private fun SelectedGifGrid(
     } else {
         LazyVerticalGrid(
             modifier = modifier,
-            columns = GridCells.Adaptive(minSize = 90.dp),
+            columns = GridCells.Adaptive(minSize = 130.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -238,10 +287,32 @@ private fun GifResultGrid(
     items: List<GifResult>,
     onGifPicked: (SelectedGif) -> Unit,
     modifier: Modifier = Modifier,
+    onLoadMore: (() -> Unit)? = null,
+    isLoadingMore: Boolean = false,
 ) {
+    val gridState = rememberLazyGridState()
+
+    if (onLoadMore != null) {
+        // Fires once as the last few items scroll into view, not once per frame:
+        // shouldLoadMore only flips true->false->true again as the threshold is
+        // actually crossed, and LaunchedEffect only re-runs on that flip.
+        val shouldLoadMore by remember {
+            derivedStateOf {
+                val layoutInfo = gridState.layoutInfo
+                val totalItems = layoutInfo.totalItemsCount
+                val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+                totalItems > 0 && lastVisibleIndex >= totalItems - 6
+            }
+        }
+        LaunchedEffect(shouldLoadMore) {
+            if (shouldLoadMore) onLoadMore()
+        }
+    }
+
     LazyVerticalGrid(
+        state = gridState,
         modifier = modifier,
-        columns = GridCells.Adaptive(minSize = 90.dp),
+        columns = GridCells.Adaptive(minSize = 130.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -262,6 +333,13 @@ private fun GifResultGrid(
                         )
                     },
             )
+        }
+        if (isLoadingMore) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Box(Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                }
+            }
         }
     }
 }
@@ -324,6 +402,72 @@ private fun SelectedGif.description(): String? = when (this) {
     is SelectedGif.FromDevice -> null
 }
 
+/** The model for the full-size confirmation preview -- the higher-res fullUrl
+ *  for a search result, versus previewModel()'s smaller thumbnail-sized one. */
+private fun SelectedGif.fullPreviewModel(): Any = when (this) {
+    is SelectedGif.FromSearch -> fullUrl
+    is SelectedGif.FromDevice -> Uri.fromFile(File(filePath))
+}
+
+/** Shown after picking a GIF from any tab or search results, or after a fresh
+ *  device upload: a full-size look before committing to it. Confirm hands the
+ *  pick up to the caller (which saves it and navigates to Camera); cancel just
+ *  drops this and returns to the browsing view underneath, unchanged. */
+@Composable
+private fun GifPreviewScreen(
+    gif: SelectedGif,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier.fillMaxSize().background(Color.Black)) {
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { context ->
+                ImageView(context).apply { scaleType = ImageView.ScaleType.FIT_CENTER }
+            },
+            update = { imageView ->
+                imageView.contentDescription = gif.description()
+                Glide.with(imageView).asGif().load(gif.fullPreviewModel()).into(imageView)
+            },
+            onRelease = { imageView -> Glide.with(imageView).clear(imageView) },
+        )
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(32.dp),
+            horizontalArrangement = Arrangement.spacedBy(64.dp),
+        ) {
+            FilledIconButton(
+                onClick = onCancel,
+                modifier = Modifier.size(64.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Discard, back to browsing",
+                    modifier = Modifier.size(32.dp),
+                )
+            }
+            FilledIconButton(
+                onClick = onConfirm,
+                modifier = Modifier.size(64.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = "Use this GIF",
+                    modifier = Modifier.size(32.dp),
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun GifThumbnail(model: Any, contentDescription: String?, modifier: Modifier = Modifier) {
     AndroidView(
@@ -359,6 +503,7 @@ private fun GifSearchContentRecentPreview() {
                 onUploadClick = {},
                 onGifPicked = {},
                 onTabSelected = {},
+                onTrendingLoadMore = {},
                 onRetry = {},
             )
         }
@@ -382,6 +527,7 @@ private fun GifSearchContentUploadsEmptyPreview() {
                 onUploadClick = {},
                 onGifPicked = {},
                 onTabSelected = {},
+                onTrendingLoadMore = {},
                 onRetry = {},
             )
         }
@@ -410,6 +556,7 @@ private fun GifSearchContentTrendingPreview() {
                 onUploadClick = {},
                 onGifPicked = {},
                 onTabSelected = {},
+                onTrendingLoadMore = {},
                 onRetry = {},
             )
         }
@@ -433,6 +580,7 @@ private fun GifSearchContentSearchResultsPreview() {
                 onUploadClick = {},
                 onGifPicked = {},
                 onTabSelected = {},
+                onTrendingLoadMore = {},
                 onRetry = {},
             )
         }
@@ -451,6 +599,7 @@ private fun GifSearchContentSearchErrorPreview() {
                 onUploadClick = {},
                 onGifPicked = {},
                 onTabSelected = {},
+                onTrendingLoadMore = {},
                 onRetry = {},
             )
         }

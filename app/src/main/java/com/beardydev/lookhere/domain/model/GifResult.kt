@@ -6,3 +6,9 @@ data class GifResult(
     val fullUrl: String,
     val description: String,
 )
+
+/** One page of a paginated GIF listing (currently just trending). */
+data class GifPage(
+    val items: List<GifResult>,
+    val hasNext: Boolean,
+)
