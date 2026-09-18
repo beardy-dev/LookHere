@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>LookHere — brag</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #fff8f1;
+        font-family: Inter, sans-serif;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      .scene {
+        background: #fff8f1;
+      }
+      .scene-inner {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* ---------- Scene 1: Hook ---------- */
+      .hook-line {
+        font-size: 96px;
+        font-weight: 800;
+        color: #241512;
+        letter-spacing: -0.02em;
+        text-align: center;
+        max-width: 1400px;
+        line-height: 1.15;
+      }
+
+      /* ---------- Scene 2: Reveal ---------- */
+      .phone-diagram {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .panel {
+        border-radius: 32px;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 24px 48px rgba(36, 21, 18, 0.12);
+      }
+      .panel-single {
+        width: 360px;
+        height: 460px;
+        background: #fd594d;
+        position: relative;
+      }
+      .glyph-gif {
+        font-size: 140px;
+      }
+      .glyph-badge {
+        position: absolute;
+        right: -28px;
+        bottom: -28px;
+        width: 116px;
+        height: 116px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 4px solid #fd594d;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 14px 28px rgba(36, 21, 18, 0.16);
+      }
+      .glyph-badge-icon {
+        font-size: 56px;
+      }
+      .reveal-caption {
+        margin-top: 56px;
+        font-size: 52px;
+        font-weight: 700;
+        color: #241512;
+        text-align: center;
+      }
+
+      /* ---------- Shared: phone-frame for real screenshots ---------- */
+      .frame-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+      }
+      .phone-frame {
+        width: 620px;
+        height: 774px;
+        border-radius: 46px;
+        border: 10px solid #241512;
+        overflow: hidden;
+        position: relative;
+        background: #000;
+        box-shadow: 0 30px 60px rgba(36, 21, 18, 0.18);
+      }
+      .phone-frame img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .scene-caption {
+        font-size: 46px;
+        font-weight: 700;
+        color: #241512;
+        text-align: center;
+      }
+      .scene-subcaption {
+        margin-top: 8px;
+        font-size: 26px;
+        font-weight: 500;
+        color: #7a655d;
+        text-align: center;
+        max-width: 900px;
+      }
+
+      /* search overlay (scene 3) */
+      .search-overlay {
+        position: absolute;
+        left: 14.7px;
+        top: 44px;
+        width: 528px;
+        height: 39px;
+        display: flex;
+        align-items: center;
+        padding-left: 16px;
+        font-size: 23px;
+        font-weight: 500;
+        color: #241512;
+        letter-spacing: -0.01em;
+      }
+      .search-caret {
+        display: inline-block;
+        width: 2px;
+        height: 24px;
+        background: #241512;
+        margin-left: 2px;
+        transform: translateY(3px);
+      }
+
+      /* tap dot */
+      .tap-dot {
+        position: absolute;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        border: 4px solid #fd594d;
+        background: rgba(253, 89, 77, 0.28);
+        transform: translate(-50%, -50%);
+      }
+
+      /* flash overlay */
+      .flash {
+        position: absolute;
+        inset: 0;
+        background: #ffffff;
+        opacity: 0;
+      }
+
+      /* thumbnail pop-in */
+      .thumb-pop {
+        position: absolute;
+        left: 8%;
+        bottom: 7%;
+        width: 84px;
+        height: 84px;
+        border-radius: 20px;
+        background: #fbb748;
+        border: 4px solid #ffffff;
+        display: grid;
+        place-items: center;
+        font-size: 40px;
+        box-shadow: 0 10px 22px rgba(36, 21, 18, 0.3);
+        opacity: 0;
+      }
+
+      /* ---------- Scene 6: Outro ---------- */
+      .outro-icon {
+        width: 168px;
+        height: 168px;
+        border-radius: 40px;
+        box-shadow: 0 20px 40px rgba(36, 21, 18, 0.16);
+      }
+      .outro-word {
+        margin-top: 28px;
+        font-size: 76px;
+        font-weight: 800;
+        color: #241512;
+        letter-spacing: -0.02em;
+      }
+      .outro-tagline {
+        margin-top: 10px;
+        font-size: 34px;
+        font-weight: 600;
+        color: #dd4438;
+      }
+      .outro-byline {
+        margin-top: 18px;
+        font-size: 22px;
+        font-weight: 500;
+        color: #7a655d;
+        letter-spacing: 0.02em;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-at0g" id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="20">
+      <!-- Scene 1 — Hook — 0 to 2.5 -->
+      <section data-hf-id="hf-hk4x" id="scene-hook" class="clip scene scene-hook" data-start="0" data-duration="2.5" data-track-index="0">
+        <div data-hf-id="hf-97sb" class="scene-inner">
+          <div data-hf-id="hf-gws4" class="hook-line" id="hook-line">Kids won't look at the camera.</div>
+        </div>
+      </section>
+
+      <!-- Scene 2 — Reveal — 2.5 to 5.5 -->
+      <section id="scene-reveal" class="clip scene scene-reveal" data-start="2.5" data-duration="3" data-track-index="0">
+        <div class="scene-inner">
+          <div class="phone-diagram">
+            <div class="panel panel-single" id="panel-single">
+              <span class="glyph-gif" id="glyph-gif">✨</span>
+              <div class="glyph-badge" id="glyph-badge">
+                <span class="glyph-badge-icon">📷</span>
+              </div>
+            </div>
+          </div>
+          <div class="reveal-caption" id="reveal-caption">So we gave it something worth looking at.</div>
+        </div>
+      </section>
+
+      <!-- Scene 3 — Flow: entry — 5.5 to 9.0 -->
+      <section data-hf-id="hf-u5b4" id="scene-entry" class="clip scene scene-entry" data-start="5.5" data-duration="3.5" data-track-index="0">
+        <div data-hf-id="hf-s65a" class="scene-inner">
+          <div data-hf-id="hf-04h8" class="frame-wrap">
+            <div data-hf-id="hf-4xse" class="phone-frame" id="frame-entry">
+              <img data-hf-id="hf-6iav" src="assets/screens/01-launch.png" alt="LookHere GIF picker">
+              <div data-hf-id="hf-tcs2" class="search-overlay" id="search-overlay">
+                <span data-hf-id="hf-cupe" id="search-text"></span><span data-hf-id="hf-9p7n" class="search-caret" id="search-caret"></span>
+              </div>
+            </div>
+            <div data-hf-id="hf-yeow">
+              <div data-hf-id="hf-pwoi" class="scene-caption">Pick any GIF.</div>
+              <div data-hf-id="hf-v4zs" class="scene-subcaption">Search, browse, or upload your own.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 4 — Flow: key action — 9.0 to 14.0 -->
+      <section data-hf-id="hf-qads" id="scene-action" class="clip scene scene-action" data-start="9.0" data-duration="5" data-track-index="0">
+        <div data-hf-id="hf-rru9" class="scene-inner">
+          <div data-hf-id="hf-wu2s" class="frame-wrap">
+            <div data-hf-id="hf-nxiw" class="phone-frame" id="frame-action">
+              <img data-hf-id="hf-1m65" src="assets/screens/03-after-pick.png" alt="LookHere selfie split-pane: GIF looping over the live viewfinder">
+            </div>
+            <div data-hf-id="hf-y7yw">
+              <div data-hf-id="hf-g030" class="scene-caption">Loops right where they're looking.</div>
+              <div data-hf-id="hf-tq57" class="scene-subcaption">
+                On the Z Fold, that's the outer screen — this phone just has one, so it splits the view instead.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 5 — Flow: result — 14.0 to 17.52 -->
+      <section data-hf-id="hf-cuj9" id="scene-result" class="clip scene scene-result" data-start="14.0" data-duration="3.52" data-track-index="0">
+        <div data-hf-id="hf-rdj8" class="scene-inner">
+          <div data-hf-id="hf-vn5p" class="frame-wrap">
+            <div data-hf-id="hf-op69" class="phone-frame" id="frame-result">
+              <img data-hf-id="hf-xfl6" src="assets/screens/04-rear-camera.png" alt="LookHere rear-camera viewfinder">
+              <div data-hf-id="hf-u95m" class="flash" id="flash"></div>
+              <div data-hf-id="hf-jpog" class="tap-dot" id="tap-dot" style="left: 49.8%; top: 92.5%"></div>
+              <div data-hf-id="hf-u6qt" class="thumb-pop" id="thumb-pop">✅</div>
+            </div>
+            <div data-hf-id="hf-hadj" class="scene-caption">Tap. Got it.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 6 — Outro — 17.52 to 20.0 -->
+      <section data-hf-id="hf-1qg7" id="scene-outro" class="clip scene scene-outro" data-start="17.52" data-duration="2.48" data-track-index="0">
+        <div data-hf-id="hf-qz87" class="scene-inner">
+          <img data-hf-id="hf-7ad3" class="outro-icon" id="outro-icon" src="assets/lookhere_icon_fullbleed_v3.png" alt="LookHere icon">
+          <div data-hf-id="hf-obo7" class="outro-word" id="outro-word">LookHere</div>
+          <div data-hf-id="hf-y86f" class="outro-tagline" id="outro-tagline">Finally, a good picture.</div>
+          <div data-hf-id="hf-l1w7" class="outro-byline" id="outro-byline">Any phone. Even more fun on a Fold.</div>
+        </div>
+      </section>
+
+      <!-- Audio -->
+      <audio data-hf-id="hf-6w6y" id="bgm" src="assets/music/happy-beats-business-moves-vol-1-by-ende-dot-app.mp3" data-start="0" data-duration="20" data-track-index="10" data-volume="1"></audio>
+
+      <audio data-hf-id="hf-dzt1" id="sfx-panel1" src="assets/sfx/interface/click_003.ogg" data-start="3.05" data-duration="0.01" data-track-index="11"></audio>
+      <audio data-hf-id="hf-pjai" id="sfx-panel2" src="assets/sfx/interface/click_003.ogg" data-start="3.45" data-duration="0.01" data-track-index="11"></audio>
+
+      <audio data-hf-id="hf-dbp2" id="sfx-key1" src="assets/sfx/keyboard/keypress-003.wav" data-start="6.30" data-duration="0.12" data-track-index="12"></audio>
+      <audio data-hf-id="hf-v69l" id="sfx-key2" src="assets/sfx/keyboard/keypress-007.wav" data-start="6.43" data-duration="0.12" data-track-index="12"></audio>
+      <audio data-hf-id="hf-vvn1" id="sfx-key3" src="assets/sfx/keyboard/keypress-011.wav" data-start="6.56" data-duration="0.12" data-track-index="12"></audio>
+      <audio data-hf-id="hf-1ypy" id="sfx-key4" src="assets/sfx/keyboard/keypress-015.wav" data-start="6.69" data-duration="0.12" data-track-index="12"></audio>
+      <audio data-hf-id="hf-nsrq" id="sfx-key5" src="assets/sfx/keyboard/keypress-019.wav" data-start="6.82" data-duration="0.12" data-track-index="12"></audio>
+      <audio data-hf-id="hf-5zs8" id="sfx-key6" src="assets/sfx/keyboard/keypress-023.wav" data-start="6.95" data-duration="0.12" data-track-index="12"></audio>
+      <audio data-hf-id="hf-12ss" id="sfx-key7" src="assets/sfx/keyboard/keypress-027.wav" data-start="7.08" data-duration="0.12" data-track-index="12"></audio>
+      <audio data-hf-id="hf-zzzp" id="sfx-key8" src="assets/sfx/keyboard/keypress-031.wav" data-start="7.21" data-duration="0.12" data-track-index="12"></audio>
+      <audio data-hf-id="hf-a6a9" id="sfx-key9" src="assets/sfx/keyboard/keypress-005.wav" data-start="7.34" data-duration="0.12" data-track-index="12"></audio>
+      <audio data-hf-id="hf-k1cn" id="sfx-key10" src="assets/sfx/keyboard/keypress-009.wav" data-start="7.47" data-duration="0.12" data-track-index="12"></audio>
+
+      <!-- beat-locked: 16.02s (strongCue) -->
+      <audio data-hf-id="hf-0o1l" id="sfx-shutter" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="16.02" data-duration="0.19" data-track-index="13"></audio>
+      <!-- beat-grid: 16.52s -->
+      <audio data-hf-id="hf-r8ym" id="sfx-thumb" src="assets/sfx/impact/impactBell_heavy_004.ogg" data-start="16.52" data-duration="0.30" data-track-index="13"></audio>
+      <!-- beat-locked: 17.52s (strongCue, matches scene 5→6 transition) -->
+      <audio data-hf-id="hf-1f3q" id="sfx-outro" src="assets/sfx/impact/impactSoft_medium_004.ogg" data-start="17.52" data-duration="0.15" data-track-index="13"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // ---------- Scene 1: Hook (0 - 2.5) ----------
+      tl.fromTo(
+        "#hook-line",
+        { opacity: 0, y: 36, scale: 0.94 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)" },
+        0.15
+      );
+
+      // bgm fade-in under the hook
+      tl.fromTo("#bgm", { volume: 0 }, { volume: 0.55, duration: 1.1 }, 0);
+
+      // ---------- Scene 2: Reveal (2.5 - 5.5) ----------
+      tl.fromTo(
+        "#panel-single",
+        { opacity: 0, y: 24, scale: 0.92 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" },
+        2.75
+      );
+      tl.fromTo(
+        "#glyph-gif",
+        { opacity: 0, scale: 0.4 },
+        { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" },
+        3.05
+      );
+      tl.fromTo(
+        "#glyph-badge",
+        { opacity: 0, scale: 0.3 },
+        { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.2)" },
+        3.45
+      );
+      tl.fromTo(
+        "#reveal-caption",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
+        3.75
+      );
+      // bgm rises into the reveal
+      tl.to("#bgm", { volume: 0.72, duration: 0.6 }, 2.5);
+
+      // ---------- Scene 3: Flow entry (5.5 - 9.0) ----------
+      tl.fromTo(
+        "#frame-entry",
+        { opacity: 0, y: 26, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" },
+        5.7
+      );
+
+      // typed search text, one character at a time
+      const searchWord = "good night";
+      const searchEl = document.getElementById("search-text");
+      for (let i = 1; i <= searchWord.length; i++) {
+        tl.call(
+          () => {
+            searchEl.textContent = searchWord.slice(0, i);
+          },
+          null,
+          6.3 + (i - 1) * 0.13
+        );
+      }
+      // blinking caret, finite
+      tl.fromTo(
+        "#search-caret",
+        { opacity: 1 },
+        { opacity: 0, duration: 0.25, repeat: 5, yoyo: true, ease: "steps(1)" },
+        7.6
+      );
+
+      // ---------- Scene 4: Flow key action (9.0 - 14.0) ----------
+      tl.fromTo(
+        "#frame-action",
+        { opacity: 0, scale: 0.96 },
+        { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" },
+        9.2
+      );
+      // slow Ken Burns hold across the hero frame
+      tl.fromTo("#frame-action img", { scale: 1.0 }, { scale: 1.035, duration: 4.6, ease: "none" }, 9.3);
+
+      // ---------- Scene 5: Flow result (14.0 - 17.52) ----------
+      tl.fromTo(
+        "#frame-result",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" },
+        14.15
+      );
+
+      // simulated shutter tap, beat-locked: 16.02s
+      tl.fromTo(
+        "#tap-dot",
+        { opacity: 0, scale: 0.5 },
+        { opacity: 1, scale: 1.3, duration: 0.22, ease: "power2.out" },
+        15.95
+      );
+      tl.to("#tap-dot", { opacity: 0, duration: 0.22, ease: "power1.in" }, 16.18);
+
+      // camera flash
+      tl.fromTo("#flash", { opacity: 0 }, { opacity: 0.85, duration: 0.06, ease: "none" }, 16.02);
+      tl.to("#flash", { opacity: 0, duration: 0.16, ease: "power1.out" }, 16.08);
+
+      // thumbnail pop, beat-grid: 16.52s
+      tl.fromTo(
+        "#thumb-pop",
+        { opacity: 0, scale: 0.4 },
+        { opacity: 1, scale: 1.15, duration: 0.22, ease: "back.out(3)" },
+        16.52
+      );
+      tl.to("#thumb-pop", { scale: 1.0, duration: 0.16, ease: "power2.out" }, 16.74);
+
+      // bgm pull-down heading into the outro
+      tl.to("#bgm", { volume: 0.32, duration: 0.7 }, 16.7);
+
+      // ---------- Scene 6: Outro (17.52 - 20.0) ----------
+      tl.fromTo(
+        "#outro-icon",
+        { opacity: 0, y: 18, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.8)" },
+        17.68
+      );
+      tl.fromTo("#outro-word", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 17.95);
+      tl.fromTo(
+        "#outro-tagline",
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
+        18.2
+      );
+      tl.fromTo(
+        "#outro-byline",
+        { opacity: 0 },
+        { opacity: 1, duration: 0.4, ease: "power2.out" },
+        18.45
+      );
+      // final fade to silence, landing just before the render ends
+      tl.to("#bgm", { volume: 0, duration: 1.0 }, 18.7);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

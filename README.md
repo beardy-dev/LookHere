@@ -1,13 +1,21 @@
 ![App Logo](lookhere_icon_fullbleed_v3.png)
 # LookHere
 
-An Android camera app built for the Samsung Galaxy Z Fold: while you shoot a
-photo with the rear camera, the phone's **cover screen** (facing the subject)
-loops a fun GIF to grab their attention, while the **inner screen** stays the
-normal camera viewfinder for whoever's taking the photo. On phones without a
-second screen (or when the Fold is folded shut), it falls back to a selfie
-mode that shows the GIF and viewfinder side by side on the one screen you've
-got.
+An Android camera app that plays a fun GIF right where your subject is
+looking, to grab their attention while you shoot — handy any time you're
+photographing someone who won't look at the lens, kids especially.
+
+The core mode works on any phone: flip to the front camera and the GIF
+plays in a pane right alongside the live viewfinder, side by side or
+stacked depending on orientation. A swap button flips which side the GIF
+is on, so you can line it up next to your phone's actual selfie-camera
+lens and pull your kid's eyes toward it instead of wherever's just fun to
+look at on screen.
+
+On a folding phone like the Samsung Galaxy Z Fold, you get a second,
+stronger version of the same trick: shoot with the **rear** camera while
+the phone's **outer cover screen** (facing your subject) loops the GIF,
+and your **inner screen** stays a clean, GIF-free viewfinder just for you.
 
 ## Download
 
@@ -43,7 +51,7 @@ That's it: no location, no contacts, no background access.
 ## Features
 
 - **GIF search** via the [Klipy](https://klipy.com) API (a Tenor-API
-  successor), filtered to G-rated content.
+  successor).
 - **Recent / Uploads / Trending tabs**: a blank search shows a tabbed
   browse area: your last 12 picks, just the ones you uploaded from your
   device, and Klipy's trending feed. Typing a search query replaces the
@@ -52,13 +60,18 @@ That's it: no location, no contacts, no background access.
   search and Trending need the network.
 - **Upload your own GIF** from the device's photo library as an alternative
   to searching; the last several uploads stay available in the Uploads tab.
-- **Rear-camera + cover-screen mode**: the selected GIF loops on the Fold's
-  outer display via Jetpack WindowManager's rear-display "window area" API,
-  while the inner screen shows a live CameraX viewfinder.
-- **Selfie mode**: flip to the front camera and the GIF plays in an in-app
-  pane alongside the viewfinder instead (there's no one else to show the
-  cover screen to). Automatically kicks in when folded shut or on a
-  single-display phone, and live-switches to it if you fold the phone mid-session.
+- **Selfie split-pane (works on any phone)**: flip to the front camera and
+  the GIF plays in a pane right alongside the live viewfinder. A swap
+  button flips which side the GIF is on, so you can line it up next to
+  your phone's actual selfie-camera lens and pull your subject's gaze
+  toward it. This is the default mode on any single-screen phone, and
+  what a folding phone falls back to when it's folded shut.
+- **Rear-camera + cover-screen mode (folding phones)**: on a folding phone
+  with rear-display support, like the Galaxy Z Fold, the GIF loops on the
+  **outer** screen facing your subject via Jetpack WindowManager's
+  rear-display "window area" API, while the **inner** screen stays a
+  clean CameraX viewfinder just for you. Live-switches to selfie mode if
+  you fold the phone mid-session.
 - Photos save straight to the system camera roll, with a one-tap thumbnail
   to jump into your gallery app afterward.
 - Light/dark theming with a custom color palette (see
@@ -161,9 +174,13 @@ retains an upload-key recovery path even if you lose your local copy.
 
 ## Known limitations
 
-- The cover-screen GIF loop requires a real Samsung Galaxy Fold device (or
-  similar dual-screen foldable) with vendor support for Jetpack
+- The rear-camera cover-screen mode requires a real Samsung Galaxy Fold
+  device (or similar dual-screen foldable) with vendor support for Jetpack
   WindowManager's rear-display API. It can't be verified on an emulator.
+  On any other phone, use the selfie split-pane mode instead.
+- GIF content isn't filtered or moderated yet — search and Trending results
+  come straight from Klipy as-is. Content filtering is planned but not yet
+  built.
 - v1 scope is a single manually-picked GIF per session; auto-rotating
   through multiple GIFs per shutter press is a possible future feature, not
   built here.

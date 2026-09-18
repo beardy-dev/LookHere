@@ -22,3 +22,7 @@ local.properties
 *.p12
 *.pepk
 keystore.properties
+
+# Hyperframes local preview/render caches (regenerated on demand, not source)
+.thumbnails/
+.waveform-cache/
