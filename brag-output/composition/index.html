@@ -133,6 +133,21 @@
         max-width: 900px;
       }
 
+      /* caption crossfade slot (scene 4 hero hold) */
+      .caption-slot {
+        position: relative;
+        width: 900px;
+        height: 118px;
+      }
+      .caption-layer {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        opacity: 0;
+      }
+
       /* search overlay (scene 3) */
       .search-overlay {
         position: absolute;
@@ -193,7 +208,7 @@
         opacity: 0;
       }
 
-      /* ---------- Scene 6: Outro ---------- */
+      /* ---------- Scene 5: Outro ---------- */
       .outro-icon {
         width: 168px;
         height: 168px;
@@ -264,40 +279,31 @@
         </div>
       </section>
 
-      <!-- Scene 4 — Flow: key action — 9.0 to 14.0 -->
-      <section data-hf-id="hf-qads" id="scene-action" class="clip scene scene-action" data-start="9.0" data-duration="5" data-track-index="0">
-        <div data-hf-id="hf-rru9" class="scene-inner">
-          <div data-hf-id="hf-wu2s" class="frame-wrap">
-            <div data-hf-id="hf-nxiw" class="phone-frame" id="frame-action">
-              <img data-hf-id="hf-1m65" src="assets/screens/03-after-pick.png" alt="LookHere selfie split-pane: GIF looping over the live viewfinder">
+      <!-- Scene 4 — Flow: hero hold (key action + result, one shot) — 9.0 to 17.52 -->
+      <section id="scene-hero" class="clip scene scene-hero" data-start="9.0" data-duration="8.52" data-track-index="0">
+        <div class="scene-inner">
+          <div class="frame-wrap">
+            <div class="phone-frame" id="frame-hero" data-layout-allow-overflow="true">
+              <img id="frame-hero-img" src="assets/screens/03-after-pick.png" alt="LookHere selfie split-pane: GIF looping over the live viewfinder">
+              <div class="flash" id="flash"></div>
+              <div class="tap-dot" id="tap-dot" style="left: 49.8%; top: 92.5%"></div>
+              <div class="thumb-pop" id="thumb-pop">✅</div>
             </div>
-            <div data-hf-id="hf-y7yw">
-              <div data-hf-id="hf-g030" class="scene-caption">Loops right where they're looking.</div>
-              <div data-hf-id="hf-tq57" class="scene-subcaption">
-                On the Z Fold, that's the outer screen — this phone just has one, so it splits the view instead.
+            <div class="caption-slot" data-layout-allow-overlap="true">
+              <div class="caption-layer" id="caption-a">
+                <div class="scene-caption">Loops right where they're looking.</div>
+                <div class="scene-subcaption">Swap sides to line it up with your camera lens.</div>
+              </div>
+              <div class="caption-layer" id="caption-b">
+                <div class="scene-caption">Tap. Got it.</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Scene 5 — Flow: result — 14.0 to 17.52 -->
-      <section data-hf-id="hf-cuj9" id="scene-result" class="clip scene scene-result" data-start="14.0" data-duration="3.52" data-track-index="0">
-        <div data-hf-id="hf-rdj8" class="scene-inner">
-          <div data-hf-id="hf-vn5p" class="frame-wrap">
-            <div data-hf-id="hf-op69" class="phone-frame" id="frame-result">
-              <img data-hf-id="hf-xfl6" src="assets/screens/04-rear-camera.png" alt="LookHere rear-camera viewfinder">
-              <div data-hf-id="hf-u95m" class="flash" id="flash"></div>
-              <div data-hf-id="hf-jpog" class="tap-dot" id="tap-dot" style="left: 49.8%; top: 92.5%"></div>
-              <div data-hf-id="hf-u6qt" class="thumb-pop" id="thumb-pop">✅</div>
-            </div>
-            <div data-hf-id="hf-hadj" class="scene-caption">Tap. Got it.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Scene 6 — Outro — 17.52 to 20.0 -->
-      <section data-hf-id="hf-1qg7" id="scene-outro" class="clip scene scene-outro" data-start="17.52" data-duration="2.48" data-track-index="0">
+      <!-- Scene 5 — Outro — 17.52 to 20.0 -->
+      <section id="scene-outro" class="clip scene scene-outro" data-start="17.52" data-duration="2.48" data-track-index="0">
         <div data-hf-id="hf-qz87" class="scene-inner">
           <img data-hf-id="hf-7ad3" class="outro-icon" id="outro-icon" src="assets/lookhere_icon_fullbleed_v3.png" alt="LookHere icon">
           <div data-hf-id="hf-obo7" class="outro-word" id="outro-word">LookHere</div>
@@ -401,23 +407,22 @@
         7.6
       );
 
-      // ---------- Scene 4: Flow key action (9.0 - 14.0) ----------
+      // ---------- Scene 4: Hero hold, key action + result in one shot (9.0 - 17.52) ----------
       tl.fromTo(
-        "#frame-action",
+        "#frame-hero",
         { opacity: 0, scale: 0.96 },
         { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" },
         9.2
       );
-      // slow Ken Burns hold across the hero frame
-      tl.fromTo("#frame-action img", { scale: 1.0 }, { scale: 1.035, duration: 4.6, ease: "none" }, 9.3);
+      // slow Ken Burns hold across the whole hero shot
+      tl.fromTo("#frame-hero-img", { scale: 1.0 }, { scale: 1.05, duration: 8.0, ease: "none" }, 9.3);
 
-      // ---------- Scene 5: Flow result (14.0 - 17.52) ----------
-      tl.fromTo(
-        "#frame-result",
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" },
-        14.15
-      );
+      // caption beat 1: "Loops right where they're looking."
+      tl.fromTo("#caption-a", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 9.5);
+      tl.to("#caption-a", { opacity: 0, y: -12, duration: 0.3, ease: "power1.in" }, 13.5);
+
+      // caption beat 2: "Tap. Got it." -- overlaps caption-a's fade-out for a true crossfade
+      tl.fromTo("#caption-b", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 13.6);
 
       // simulated shutter tap, beat-locked: 16.02s
       tl.fromTo(
@@ -444,7 +449,7 @@
       // bgm pull-down heading into the outro
       tl.to("#bgm", { volume: 0.32, duration: 0.7 }, 16.7);
 
-      // ---------- Scene 6: Outro (17.52 - 20.0) ----------
+      // ---------- Scene 5: Outro (17.52 - 20.0) ----------
       tl.fromTo(
         "#outro-icon",
         { opacity: 0, y: 18, scale: 0.9 },

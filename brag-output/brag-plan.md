@@ -10,41 +10,45 @@ to the outer cover screen so you can shoot with the rear camera instead.
 ## The angle
 Every parent's nemesis: a kid who will not look at the camera. LookHere's
 whole premise is making that moment fun instead of a fight — the phone
-plays a genuinely funny GIF right where the kid's eyes already are, so they
-smile at the camera instead of away from it. It's earnest, not corporate,
-because the app genuinely only does this one thing well: make picture time
-more fun for the kid and easier for the parent.
+plays a genuinely funny GIF right where the kid's eyes already are, so
+they smile at the camera instead of away from it. It's earnest, not
+corporate, because the app genuinely only does this one thing well: make
+picture time more fun for the kid and easier for the parent.
 
 ## Hook (first 2-3 seconds)
 Bold type, alone on the cream background: **"Kids won't look at the camera."**
 A beat of recognition before the reveal — no logo yet, just the problem.
 
 ## Key moments (the middle)
-- The GIF picker: real search/browse UI (Recent / Uploads / Trending tabs),
-  landing on a genuinely charming pick.
-- The split-screen truth of the trick: the picked GIF looping right above the
-  live viewfinder — proof the phone is showing two different things to two
-  different people at once.
-- The payoff: a clean tap of the shutter, the new thumbnail popping into the
-  corner — the photographer got their shot.
+- The GIF picker: real search UI, typing a search and landing on a
+  genuinely charming pick.
+- The hero hold: the picked GIF looping right above the live viewfinder,
+  one real screenshot, held long enough to read as "this is the whole
+  trick" — and a beat about the swap-sides control that lines the GIF up
+  with the actual camera lens.
+- The payoff, in that same shot: a clean tap of the shutter, a flash, the
+  new thumbnail popping into the corner — no scene cut, because the shot
+  that got the GIF is the shot that took the picture.
 
 ## Outro / punchline
 Logo + wordmark on the cream/primary palette, then the tagline: **"Finally, a
 good picture."** Small byline: "Any phone. Even more fun on a Fold."
 
 ## User flow worth showing
-1. **Entry** — open the GIF picker, browse the tabbed feed, pick a GIF.
-2. **Key action** — aim the camera; the GIF plays where the subject is looking
-   while the viewfinder keeps rolling for the photographer.
-3. **Result** — tap the shutter; the shot lands, thumbnail appears instantly.
+1. **Entry** — open the GIF picker, search, pick a GIF.
+2. **Key action** — aim the front camera; the GIF plays right alongside the
+   viewfinder, in the same frame the kid is looking at.
+3. **Result** — tap the shutter, in that same frame; the shot lands,
+   thumbnail appears instantly.
 
 ## Tone
 - Preset: default
 - Creative direction: warm, funny-because-it's-true, zero corporate gloss —
   the tone of someone showing a friend the dumb-smart thing they built.
-- Interpretation: comfortable 3-5s scenes, mixed-case type that's allowed to
-  be a little playful, crossfades/clean slides between beats, restraint on
-  jokes — the product's premise is funny enough on its own.
+- Interpretation: comfortable 3-5s scenes (one longer hero hold), mixed-case
+  type that's allowed to be a little playful, crossfades/clean slides
+  between beats, restraint on jokes — the product's premise is funny
+  enough on its own.
 
 ## Format: landscape — 1920x1080
 ## Duration: 20s
@@ -60,7 +64,8 @@ good picture."** Small byline: "Any phone. Even more fun on a Fold."
   match without needing to be pixel-identical.
 - Strongest visual element: the real split-pane shot — a looping GIF stacked
   directly over the live camera viewfinder. That single frame *is* the
-  product's whole pitch.
+  product's whole pitch, and it's also where the shutter tap happens — one
+  shot carries the whole middle of the video.
 
 ## Share copy (draft)
 We built a camera app that gives kids something fun to look at, right where
@@ -77,14 +82,13 @@ LookHere. 📸
 - Music cue guidance: preset read from
   `assets/music/cues/happy-beats-business-moves-vol-1-by-ende-dot-app.music-cues.json`.
   Strong cues in the first 20s cluster around 16.0s, 17.0s, 17.5s, 18.5s,
-  20.0s — good targets for the flow→result and result→outro transitions.
+  20.0s — good targets for the shutter-tap and hero→outro transitions.
   Beat grid runs a steady ~0.5s spacing from ~3s onward — usable for the
-  shutter-tap accent and thumbnail pop-in.
-- Audio-reactive treatment: subtle — the outer-screen/GIF glow in the reveal
-  scene may breathe gently with the beat; nothing waveform-literal.
+  thumbnail pop-in.
+- Audio-reactive treatment: subtle — the Scene 2 concept icon's glow may
+  breathe gently with the beat; nothing waveform-literal.
 - SFX posture: moderate — a soft UI tap for the GIF pick, a camera
-  shutter click on the tap, a light "pop" for the thumbnail arriving. Use
-  `sfx-analysis.md` during composition to pick exact files.
+  shutter click on the tap, a light "pop" for the thumbnail arriving.
 - Audio-coupled moments: shutter tap synced to a strong cue; thumbnail pop-in
   synced to the following beat; GIF-card selection gets a light UI tap.
 - Restraint rule: never let SFX or music upstage the shutter-click moment —
@@ -116,45 +120,38 @@ Music: bed rises to full presence
 Transition mood: soft → Scene 3
 
 ### Scene 3 — Flow: entry (pick a GIF) — 3.5s
-Real screenshot: the GIF picker screen (Recent / Uploads / Trending tabs,
-"Search KLIPY" bar). Simulate a tap into the Trending tab, then a tap
-selecting the "Good Night" bunny GIF card — it scales up slightly on
-selection. Text label, small and out of the way: "Pick any GIF."
-Sequential/interaction: yes — tab switch, then the picked card scales/
-highlights on tap
+Real screenshot: the GIF picker screen ("Search KLIPY" bar, tabs beneath
+it). Simulate typing "good night" into the search field, character by
+character. Text label, small and out of the way: "Pick any GIF."
+Sequential/interaction: yes — search text types out, blinking caret at rest
 Audio intent: light, snappy, gets the viewer moving through the UI
-Audio-coupled idea: soft tap sound on the tab switch and on the GIF pick
+Audio-coupled idea: soft key-tick sound per typed character
 Music: steady groove
 Transition mood: clean → Scene 4
 
-### Scene 4 — Flow: key action (the trick, live) — 5s
+### Scene 4 — Flow: hero hold (key action + result, one continuous shot) — 8.52s
 Real screenshot: the selfie split-pane view — the picked "Good Night" GIF
 looping in the top half, the live camera viewfinder in the bottom half.
-Hold on this — it's the strongest single frame in the video. Text label:
-"Loops right where they're looking." Small secondary caption clarifies the
-real setup: "On the Z Fold, that's the outer screen — this phone just has
-one, so it splits the view instead."
-Sequential/interaction: none (the GIF itself loops/animates in place —
-that's the whole point of the hold)
-Audio intent: warm, a little cheeky — this is the "aha, that's clever"
-beat, give it room
-Audio-coupled idea: none — let the loop and the music carry it
-Music: full groove, steady
-Transition mood: clean → Scene 5
-
-### Scene 5 — Flow: result (the shot lands) — 3.5s
-Real screenshot: rear-camera full viewfinder. Simulate a tap on the shutter
-button; a brief flash/click treatment plays, then the captured-photo
-thumbnail pops into the bottom-left corner. Text label: "Tap. Got it."
-Sequential/interaction: yes — shutter tap → flash accent → thumbnail
-pop-in, in that order
-Audio intent: satisfying, a clean payoff click
+One image, held for the whole scene — this is the strongest single frame
+in the video, and the shutter tap later in this same scene happens inside
+it, not on a cutaway. Caption beat 1 (first ~4.5s): "Loops right where
+they're looking." / subcaption: "Swap sides to line it up with your
+camera lens." Caption beat 1 crossfades out; caption beat 2 crossfades in:
+"Tap. Got it." Right as beat 2 lands, simulate a tap on the shutter
+button in this same frame: a brief flash, then the captured-photo
+thumbnail pops into the bottom-left corner.
+Sequential/interaction: yes — caption crossfade partway through, then
+shutter tap → flash accent → thumbnail pop-in, in that order, all within
+the one held frame
+Audio intent: warm and cheeky through the hold ("aha, that's clever"),
+resolving into a satisfying, clean payoff click for the shutter tap
 Audio-coupled idea: shutter click synced to a strong cue; thumbnail pop
 synced to the next beat
-Music: short pull-down starting here, heading into the outro
-Transition mood: hard → Scene 6
+Music: full groove through the hold, then a short pull-down starting
+around the shutter tap, heading into the outro
+Transition mood: hard → Scene 5
 
-### Scene 6 — Outro / punchline — 2.5s
+### Scene 5 — Outro / punchline — 2.48s
 App icon + "LookHere" wordmark centered on the cream background, primary-
 color accent underline. Tagline beneath: "Finally, a good picture." Small
 byline, smaller/muted text: "Any phone. Even more fun on a Fold."
@@ -167,6 +164,6 @@ Transition mood: soft (end card, no further transition)
 **Music mood for this video:** upbeat
 **Audio summary:** A warm, upbeat 120 BPM bed carries the whole video at
 steady energy, swelling slightly into the reveal and pulling down cleanly
-into the outro; sparse, motion-matched UI/shutter SFX mark the tab switch,
-GIF pick, shutter tap, and thumbnail pop-in, timed to the bundled track's
-strong cues around 16-20s for the back half of the flow.
+into the outro; sparse, motion-matched UI/shutter SFX mark the typed
+search, shutter tap, and thumbnail pop-in, timed to the bundled track's
+strong cues around 16-20s for the hero hold's payoff.
