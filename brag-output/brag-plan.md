@@ -16,10 +16,9 @@ corporate, because the app genuinely only does this one thing well: make
 picture time more fun for the kid and easier for the parent.
 
 ## Hook (first 2-3 seconds)
-Bold type, alone on the cream background: **"Getting your kids to look at
-you while you snap a picture is hard."** A beat of recognition before the
-reveal — no logo yet, just the problem. (Held for 4.5s, longer than a
-typical hook, to give this longer sentence room to actually be read.)
+Bold type, alone on the cream background: **"Trouble getting kids to focus
+during a picture or video?"** A beat of recognition before the reveal — no
+logo yet, just the problem. (Held for 3.5s.)
 
 ## Key moments (the middle)
 - The GIF picker: real search UI, typing a search and landing on a
@@ -34,7 +33,7 @@ typical hook, to give this longer sentence room to actually be read.)
 
 ## Outro / punchline
 Logo + wordmark on the cream/primary palette, then the tagline: **"Finally,
-taking pictures can be fun!"** Small byline: "More Fun. More Memories."
+taking pictures can be fun!"** Small byline: "More memories. More fun."
 
 ## User flow worth showing
 1. **Entry** — open the GIF picker, search, pick a GIF.
@@ -53,8 +52,8 @@ taking pictures can be fun!"** Small byline: "More Fun. More Memories."
   enough on its own.
 
 ## Format: landscape — 1920x1080
-## Duration: 22s (bumped from 20s: the new hook line is longer and needs
-more settled reading time — see Scene 1 below)
+## Duration: 24.5s (hook is 3.5s; a fold beat was added before the
+outro, with the entry and hero scenes tightened to fit)
 
 ## Visual identity (from the project)
 - Background: `#FFF8F1` (light mode app background — warm cream)
@@ -99,12 +98,11 @@ LookHere. 📸
 
 ## Storyboard
 
-### Scene 1 — Hook — 4.5s
-Cream background (`#FFF8F1`), centered bold dark text: "Getting your kids
-to look at you while you snap a picture is hard." No logo, no chrome —
-just the problem, stated flat. Longer hold than usual (4.5s) because this
-line is 13 words — the reading-time floor (~0.3s/word plus entrance time)
-needs it.
+### Scene 1 — Hook — 3.5s
+Cream background (`#FFF8F1`), centered bold dark text: "Trouble getting kids
+to focus during a picture or video?" No logo, no chrome — just the
+problem, stated as a question. 3.5s hold — the line is 9 words, so it
+reads comfortably and the freed second goes to the outro.
 Sequential/interaction: none
 Audio intent: quiet, a little wry — let the line land in silence-ish space
 before the beat kicks in
@@ -116,7 +114,7 @@ Transition mood: clean → Scene 2
 Simple animated illustration of a single phone: the screen lights up with a
 bright, bouncy sparkle/GIF-shaped icon, then a small camera-viewfinder icon
 badges in alongside it — one phone, one screen, now with something fun on
-it. Text overlay: "So we made it a little more interesting for them." Uses
+it. Text overlay: "Let's make it more fun!" Uses
 the app's primary/accent colors.
 Sequential/interaction: yes — the GIF icon lights up first, the camera
 badge follows a beat later
@@ -125,9 +123,9 @@ Audio-coupled idea: a light UI tick as each icon lights up
 Music: bed rises to full presence
 Transition mood: soft → Scene 3
 
-### Scene 3 — Flow: entry (pick a GIF) — 3.5s
-Real screenshot: the GIF picker screen ("Search KLIPY" bar, tabs beneath
-it). Simulate typing "good night" into the search field, character by
+### Scene 3 — Flow: entry (pick a GIF) — 3.0s
+Real screenshot: the GIF picker screen, landscape ("Search KLIPY" bar, tabs
+beneath it). Simulate typing "snoopy" into the search field, character by
 character. Text label, small and out of the way: "Pick any GIF."
 Sequential/interaction: yes — search text types out, blinking caret at rest
 Audio intent: light, snappy, gets the viewer moving through the UI
@@ -135,12 +133,12 @@ Audio-coupled idea: soft key-tick sound per typed character
 Music: steady groove
 Transition mood: clean → Scene 4
 
-### Scene 4 — Flow: hero hold (key action + result, one continuous shot) — 8.52s
-Real screenshot: the selfie split-pane view — the picked "Good Night" GIF
+### Scene 4 — Flow: hero hold (key action + result, one continuous shot) — 7.52s
+Real screenshot: the selfie split-pane view — the picked Snoopy GIF
 looping in the top half, the live camera viewfinder in the bottom half.
 One image, held for the whole scene — this is the strongest single frame
 in the video, and the shutter tap later in this same scene happens inside
-it, not on a cutaway. Caption beat 1 (first ~4.5s): "Loops right where
+it, not on a cutaway. Caption beat 1 (first ~3.5s): "Loops right where
 they're looking." / subcaption: "Swap sides to line it up with your
 camera lens." Caption beat 1 crossfades out; caption beat 2 crossfades in:
 "Tap. Got it." Right as beat 2 lands, simulate a tap on the shutter
@@ -155,12 +153,31 @@ Audio-coupled idea: shutter click synced to a strong cue; thumbnail pop
 synced to the next beat
 Music: full groove through the hold, then a short pull-down starting
 around the shutter tap, heading into the outro
+Side callouts in the same hold (static once in, no scene cut): left,
+"Works on any phone." / "Great for selfies on a single-screen phone, too."
+with a line to the split-pane; right, "Photos and videos." / "Swipe between
+PHOTO and VIDEO." with a line to the mode selector.
 Transition mood: hard → Scene 5
 
-### Scene 5 — Outro / punchline — 2.48s
+### Scene 5 — Fold beat — 4.0s
+Two real captures side by side on the cream background: the inner-screen
+rear-camera viewfinder (label: "You see the viewfinder") and the cover
+screen looping the GIF (label: "They see the GIF"). Caption: "On a foldable,
+it moves to the cover screen." / subcaption: "Shoot with the rear camera
+while they watch the outside."
+Sequential/interaction: yes — inner-screen frame slides in first, cover
+screen follows a beat later, caption last
+Audio intent: light, "oh, and it does this too"
+Audio-coupled idea: soft UI tick as the cover screen lands
+Music: bed pulls down toward the outro late in the scene
+Transition mood: hard → Scene 6
+
+### Scene 6 — Outro / punchline — 3.48s
 App icon + "LookHere" wordmark centered on the cream background, primary-
 color accent underline. Tagline beneath: "Finally, taking pictures can be
-fun!" Small byline, smaller/muted text: "More Fun. More Memories."
+fun!" Small byline, smaller/muted text: "More memories. More fun." Below it, a
+dark pill: "Coming soon to Google Play" (plain text — no Google Play badge
+or logo).
 Sequential/interaction: none
 Audio intent: warm settle, confident close
 Audio-coupled idea: none
@@ -172,6 +189,5 @@ Transition mood: soft (end card, no further transition)
 steady energy, swelling slightly into the reveal and pulling down cleanly
 into the outro; sparse, motion-matched UI/shutter SFX mark the typed
 search, shutter tap, and thumbnail pop-in. The shutter tap and thumbnail
-pop are beat-locked to the bundled track's real strong cues at 17.52s and
-18.52s (shifted from the original 16.02s/16.52s targets to land correctly
-after the hook grew from 2.5s to 4.5s).
+pop are beat-locked to the bundled track's real strong cue at 16.02s (thumbnail
+pop); the shutter tap sits a second earlier on the 15.02s beat-grid pulse.

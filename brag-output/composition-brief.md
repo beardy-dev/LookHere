@@ -7,15 +7,17 @@ Create a short launch-style brag video for LookHere.
 - Composition directory: `brag-output/composition/`
 - Rendered video: `brag-output/brag.mp4`
 - Format: landscape — 1920x1080
-- Duration: 22 seconds (Scene 1 grew from 3.5s to 4.5s to give the longer
-  hook line its reading-time floor; every later scene start shifted by the
-  same +1s as a result)
+- Duration: 24.5 seconds (Scene 1 is 3.5s; a new fold beat
+  was added before the outro, and the entry/hero scenes were tightened to
+  keep the cut under the 25s cap)
 
 ## Source Material
 - Project root: repo root (native Android app, not a website)
 - Primary files read: `README.md`, `lookhere-color-palette.md`, real on-device
   screenshots captured from a running debug build in an earlier session
-  (`brag-output/screens/`) — reused here since the app UI hasn't changed
+  (`brag-output/screens/`) — refreshed with new captures from a Fold-class
+  device/emulator: `gif-selector.jpg`, `selfie-split.jpg`,
+  `rear-camera-fullscreen.jpg`, `cover-screen-gif.png`
 - Product name: LookHere
 - Tagline / strongest claim: "plays a fun GIF right where your subject is
   looking, to grab their attention while you shoot"
@@ -50,8 +52,8 @@ Create a short launch-style brag video for LookHere.
   - Cutting to a second, disconnected screenshot for the shutter-tap
     payoff — it happens inside the same hero shot as the GIF/viewfinder
     hold (see Storyboard).
-  - Leading with the folding-phone/cover-screen angle — that's a byline-
-    level bonus mention in the outro, not the headline.
+  - Leading with the folding-phone/cover-screen angle — it's a bonus beat
+    after the hero shot, not the headline.
 
 ## Visual Identity
 - Background: `#FFF8F1` (light-mode app background, warm cream)
@@ -63,29 +65,38 @@ Create a short launch-style brag video for LookHere.
 - Body font: same family, regular weight
 - Visual references from the project: the app icon
   (`lookhere_icon_fullbleed_v3.png`), the real screenshots in
-  `brag-output/screens/` — specifically `01-launch.png` (GIF search bar)
-  and `03-after-pick.png` (selfie split-pane with a picked GIF, including
-  the shutter button in its normal on-screen position). `02-trending.png`
-  and `04-rear-camera.png` are not used in this cut.
+  `brag-output/screens/` — specifically `gif-selector.jpg` (landscape GIF
+  picker), `selfie-split.jpg` (selfie split-pane with a picked GIF,
+  including the shutter button in its normal on-screen position),
+  `rear-camera-fullscreen.jpg` and `cover-screen-gif.png` (fold beat). The
+  older `01-`–`04-` PNGs are superseded and not used in this cut.
 
 ## Storyboard
 Use the storyboard in `brag-output/brag-plan.md` as the creative contract.
 
 Scene summary:
-1. Hook — 4.5s (bumped from 3.5s for reading-time) — "Getting your kids to look at you while you snap a picture is hard." alone on cream background.
+1. Hook — 3.5s (trimmed from 4.5s; the freed second went to the outro) — "Trouble getting kids to focus during a picture or video?" alone on cream background.
 2. Reveal — 3s — illustrated single-phone concept: the screen lights up
    with a GIF-shaped icon, then a small camera-viewfinder icon badges in
-   alongside it. Caption: "So we made it a little more interesting for them"
-3. Flow: entry — 3.5s — real screenshot of the GIF picker (search bar),
-   simulated typing of "good night" character by character.
-4. Flow: hero hold — 8.52s — ONE real screenshot (the selfie split-pane,
-   `03-after-pick.png`) held for the whole scene. First caption beat:
+   alongside it. Caption: "Let's make it more fun!"
+3. Flow: entry — 3.0s — real screenshot of the GIF picker (search bar),
+   simulated typing of "snoopy" character by character (matches the
+   Snoopy GIF picked in the hero shot).
+4. Flow: hero hold — 7.52s — ONE real screenshot (the selfie split-pane,
+   `selfie-split.jpg`) held for the whole scene. First caption beat:
    "Loops right where they're looking." / "Swap sides to line it up with
    your camera lens." Crossfades to second caption beat "Tap. Got it." as
    a simulated shutter tap (at the real shutter button's on-screen
    position in that same screenshot) fires a flash and a thumbnail
    pop-in — no image swap, no scene cut mid-action.
-5. Outro — 2.48s — app icon + "LookHere" wordmark + "Finally, taking pictures can be fun!" + small "More Fun. More Memories." byline.
+   Two side callouts appear during the hold: "Works on any phone. / Great
+   for selfies on a single-screen phone, too." (pointing at the split-pane)
+   and "Photos and videos. / Swipe between PHOTO and VIDEO." (pointing at
+   the mode selector).
+5. Fold beat — 4.0s — two real captures side by side: the inner-screen rear
+   camera viewfinder ("You see the viewfinder") and the cover screen looping
+   the GIF ("They see the GIF").
+6. Outro — 3.48s — app icon + "LookHere" wordmark + "Finally, taking pictures can be fun!" + small "More memories. More fun." byline + a "Coming soon to Google Play" pill (plain text, no store badge or logo).
 
 ## Audio
 - Audio role: warm upbeat bed with tasteful UI-accurate SFX
@@ -97,7 +108,8 @@ Scene summary:
 - Music cue guidance: bundled preset at
   `assets/music/cues/happy-beats-business-moves-vol-1-by-ende-dot-app.music-cues.json`
   (120.19 BPM). Strong cues useful in the first ~20s: 16.02s, 17.02s, 17.52s,
-  18.52s, 20.02s. Beat grid runs ~0.5s apart from ~3s onward — usable for the
+  18.52s, 20.02s. This cut lands the thumbnail pop on the 16.02s strong cue, with the
+  shutter tap a second earlier on the 15.02s beat-grid pulse. Beat grid runs ~0.5s apart from ~3s onward — usable for the
   shutter-tap/thumbnail-pop sequence inside Scene 4's hero hold.
 - Audio-reactive treatment: subtle — the Scene 2 concept icon's glow may
   breathe gently with the beat. Nothing waveform-literal.
@@ -136,8 +148,8 @@ Requirements:
 - Use only 1-3 strong-cue locks in this 20s video.
 - Run `npx hyperframes check` before render — it is brag's single gate.
 - Note for this project specifically: the folding-phone cover-screen mode
-  (a real second physical display) cannot be photographed — there is no
-  live capture of it anywhere, by design. It is mentioned only as the
-  outro byline, using no footage. Scene 2 is a phone-agnostic illustrated
+  is shown with a real capture of the cover screen (`cover-screen-gif.png`,
+  an emulator render including its device bezel) beside the inner-screen
+  rear-camera viewfinder. Scene 2 stays a phone-agnostic illustrated
   concept, not a Fold-specific diagram, and must read clearly as
   illustrated, not a screenshot.
